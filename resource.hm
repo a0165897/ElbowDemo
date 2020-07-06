@@ -1,0 +1,4 @@
+// Microsoft Developer Studio generated Help ID include file.
+// Used by mfcogl1.rc
+//
+#define HIDC_STATIC                     0x8088ffff    // IDD_FIBER_PATH_CONTROL

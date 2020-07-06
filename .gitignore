@@ -338,3 +338,10 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/a.cpp
+/CNumerical.h
+/Cnumerical.cpp
+/cylinder.c
+/elbow1.c
+/numericfun.h
+/numericfun.cpp
