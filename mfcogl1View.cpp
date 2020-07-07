@@ -10,6 +10,9 @@
 #include "mfcogl1View.h"
 #include <math.h>
 
+/*added by LMK */
+#include "CreateNewTubeDlg.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -63,6 +66,10 @@ BEGIN_MESSAGE_MAP(CMfcogl1View, CView)
 	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
+
+	/*added by LMK*/
+	ON_COMMAND(IDM_CREATE_NEW_TUBE_MANDREL, OnCreateNewTubeMandrel)
+
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1352,6 +1359,76 @@ void CMfcogl1View::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	CreateMandrelDisplayList();
 	Invalidate(FALSE);
 	// TODO: Add your specialized code here and/or call the base class
-	
-	
+}
+
+/*added by LMK*/
+void CMfcogl1View::OnCreateNewTubeMandrel() {
+	CMfcogl1Doc* pDoc = GetDocument();
+	CCreateNewTubeDlg new_tube_dlg;
+	int choice = new_tube_dlg.DoModal();
+	if (choice == IDOK){
+		pDoc->ResetWndDesign();
+		m_view_tube_a = new_tube_dlg.m_dlg_tube_a;
+		m_view_tube_b = new_tube_dlg.m_dlg_tube_b;
+		m_view_tube_c = new_tube_dlg.m_dlg_tube_c;
+		m_view_tube_r = new_tube_dlg.m_dlg_tube_r;
+	}
+	//To Do: fix "CreateTubeDisplayList", fix this. 
+}
+
+void CMfcogl1View::CreateTubeDisplayList()
+{
+	GLfloat point1[3], point2[3], w, segmentw = 1, segmentc = m_view_tube_c;
+	int i = 0, flagx = 1, flagy = 1;
+	glNewList(MANDRELDISPLAYLIST, GL_COMPILE);
+
+	GLfloat matAmb[4] = { 0.3F, 0.5F, 0.8F, 1.00F };
+	GLfloat matDiff[4] = { 0.3F, 0.5F, 0.8F, 0.80F };
+	GLfloat matSpec[4] = { 0.30F, 0.30F, 0.30F, 1.00F };
+	GLfloat matShine = 60.00F;
+
+	glMaterialfv(GL_FRONT, GL_AMBIENT, matAmb);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiff);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
+	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
+	glLineWidth(1);
+
+	glBegin(GL_TRIANGLE_STRIP);
+	glNormal3f(cos((360 - 2 * segmentw) * 3.14 / 180), sin((360 - 2 * segmentw) * 3.14 / 180), 0.0f);
+	glVertex3f(m_view_tube_a + m_view_tube_r * cos((360 - 2 * segmentw) * 3.14 / 180), -m_view_tube_b + m_view_tube_r * sin((360 - 2 * segmentw) * 3.14 / 180), segmentc);
+	glNormal3f(cos((360 - segmentw) * 3.14 / 180), sin((360 - segmentw) * 3.14 / 180), 0.0f);
+	glVertex3f(m_view_tube_a + m_view_tube_r * cos((360 - segmentw) * 3.14 / 180), -m_view_tube_b + m_view_tube_r * sin((360 - segmentw) * 3.14 / 180), 0);
+	for (w = 0; w < 360; w += segmentw) {
+		flagx = (w >= 90 && w < 270) ? -1 : 1;
+		flagy = (w >= 180 && w < 360) ? -1 : 1;
+		if (i % 2 == 0)
+		{
+			glNormal3f(cos(w * 3.14 / 180), sin(w * 3.14 / 180), 0.0f);
+			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(w * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(w * 3.14 / 180), segmentc);
+		}
+		else
+		{
+			glNormal3f(cos(w * 3.14 / 180), sin(w * 3.14 / 180), 0.0f);
+			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(w * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(w * 3.14 / 180), 0);
+		}
+		i++;
+	}
+	glEnd();
+	glEndList();
+}
+
+#include<typeinfo>
+template<typename T>
+void CMfcogl1View::debug_show(T x) {
+	CString strMsg;
+	if (typeid(x) == typeid(int)) {
+		strMsg.Format("Value:%d\n", x);
+	}
+	if (typeid(x) == typeid(float)) {
+		strMsg.Format("Value:%f\n", x);
+	}
+	if (typeid(x) == typeid(char *)) {
+		strMsg.Format("Value:%s\n", x);
+	}
+	MessageBox(strMsg); 
 }

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by mfcogl1.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 mfcogl1.rc 使用
 //
 #define IDD_ABOUTBOX                    100
 #define ID_INDICATOR_WNDCIRCUIT         101
@@ -20,6 +20,7 @@
 #define IDI_ICON2                       142
 #define IDD_PRESS_DIALOG                143
 #define IDD_HINT_DIALOG                 144
+#define IDD_CREATE_NEW_TUBE             145
 #define IDC_SPAN_ANGLE                  1000
 #define IDC_SWEEP_RADIUS                1001
 #define IDC_PIPE_RADIUS                 1002
@@ -58,6 +59,10 @@
 #define IDC_PAYOUT_LAYER                1034
 #define IDC_DATA_FORMAT                 1035
 #define IDC_COMPRESS_DATA               1036
+#define IDC_LENGTH_A                    1039
+#define IDC_LENGTH_B                    1040
+#define IDC_LENGTH_R                    1041
+#define IDC_LENGTH_C                    1042
 #define IDM_ROTATE                      32771
 #define IDM_ROTATE_WITH_X               32772
 #define IDM_ROTATE_WITH_Y               32773
@@ -95,15 +100,16 @@
 #define ID_PRESSURE_TEST                32825
 #define ID_VIEW_DISPLAY_MANDREL         32826
 #define ID_VIEW_DISPLAY_PARAMETER       32828
+#define IDM_CREATE_NEW_TUBE_MANDREL     32838
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32834
-#define _APS_NEXT_CONTROL_VALUE         1037
+#define _APS_NEXT_RESOURCE_VALUE        147
+#define _APS_NEXT_COMMAND_VALUE         32839
+#define _APS_NEXT_CONTROL_VALUE         1040
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

@@ -137,6 +137,7 @@
     <ClCompile Include="cdlgsemiwndanglelaw.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="CreateNewElbowDlg.cpp" />
+    <ClCompile Include="CreateNewTubeDlg.cpp" />
     <ClCompile Include="DlgFiberPathControls.cpp" />
     <ClCompile Include="HintDialog.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="cdlgsemiwndanglelaw.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="CreateNewElbowDlg.h" />
+    <ClInclude Include="CreateNewTubeDlg.h" />
     <ClInclude Include="datatype.h" />
     <ClInclude Include="DlgFiberPathControls.h" />
     <ClInclude Include="HintDialog.h" />

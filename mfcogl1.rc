@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (P.R.C.) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
-#ifdef _WIN32
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 #pragma code_page(936)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -27,18 +25,18 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -67,25 +65,31 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\mfcogl1.ico"
-IDR_MFCOGLTYPE          ICON    DISCARDABLE     "res\\mfcogl1Doc.ico"
-IDI_ICON1               ICON    DISCARDABLE     "res\\icon1.ico"
-IDI_ICON2               ICON    DISCARDABLE     "res\\icon2.ico"
+IDR_MAINFRAME           ICON                    "res\\mfcogl1.ico"
+
+IDR_MFCOGLTYPE          ICON                    "res\\mfcogl1Doc.ico"
+
+IDI_ICON1               ICON                    "res\\icon1.ico"
+
+IDI_ICON2               ICON                    "res\\icon2.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
-IDB_BITMAP3             BITMAP  DISCARDABLE     "res\\bitmap3.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+
+IDB_BITMAP3             BITMAP                  "res\\bitmap3.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR DISCARDABLE  28, 28
+IDR_MAINFRAME TOOLBAR 28, 28
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -96,6 +100,7 @@ BEGIN
     BUTTON      ID_FILE_PRINT
     SEPARATOR
     BUTTON      IDM_CREATE_NEW_ELBOW_MANDREL
+    BUTTON      IDM_CREATE_NEW_TUBE_MANDREL
     BUTTON      IDM_AUTO_ROTATE
     BUTTON      IDM_ROTATE_WITH_X
     BUTTON      IDM_ROTATE_WITH_Y
@@ -119,73 +124,71 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "文件(&F)"
     BEGIN
-        MENUITEM "新建视图(&N)\tCtrl+N",        ID_FILE_NEW
-        MENUITEM "打开(&O)...\tCtrl+O",         ID_FILE_OPEN
+        MENUITEM "新建视图(&N)\tCtrl+N",            ID_FILE_NEW
+        MENUITEM "打开(&O)...\tCtrl+O",           ID_FILE_OPEN
         MENUITEM SEPARATOR
-        MENUITEM "打印设置(&R)...",             ID_FILE_PRINT_SETUP
+        MENUITEM "打印设置(&R)...",                 ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "最近文件",                    ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "最近文件",                        ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "退出(&X)",                    ID_APP_EXIT
+        MENUITEM "退出(&X)",                      ID_APP_EXIT
     END
     POPUP "查看(&V)"
     BEGIN
-        MENUITEM "工具栏(&T)",                  ID_VIEW_TOOLBAR
-        MENUITEM "状态栏(&S)",                  ID_VIEW_STATUS_BAR
+        MENUITEM "工具栏(&T)",                     ID_VIEW_TOOLBAR
+        MENUITEM "状态栏(&S)",                     ID_VIEW_STATUS_BAR
     END
     POPUP "帮助(&H)"
     BEGIN
-        MENUITEM "关于 ElbowCAD(&A)...",        ID_APP_ABOUT
+        MENUITEM "关于 ElbowCAD(&A)...",          ID_APP_ABOUT
     END
 END
 
-IDR_MFCOGLTYPE MENU PRELOAD DISCARDABLE 
+IDR_MFCOGLTYPE MENU
 BEGIN
     POPUP "文件(&F)"
     BEGIN
-        MENUITEM "新建(&N)\tCtrl+N",            ID_FILE_NEW
-        MENUITEM "打开(&O)...\tCtrl+O",         ID_FILE_OPEN
+        MENUITEM "新建(&N)\tCtrl+N",              ID_FILE_NEW
+        MENUITEM "打开(&O)...\tCtrl+O",           ID_FILE_OPEN
         MENUITEM "&Create new mandrel",         IDM_CREATE_NEW_ELBOW_MANDREL
-        MENUITEM "关闭(&C)",                    ID_FILE_CLOSE
-        MENUITEM "保存(&S)\tCtrl+S",            ID_FILE_SAVE
-        MENUITEM "另存为(&A)...",               ID_FILE_SAVE_AS
+        MENUITEM "关闭(&C)",                      ID_FILE_CLOSE
+        MENUITEM "保存(&S)\tCtrl+S",              ID_FILE_SAVE
+        MENUITEM "另存为(&A)...",                  ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "打印(&P)...\tCtrl+P",         ID_FILE_PRINT
-        MENUITEM "打印预览(&V)",                ID_FILE_PRINT_PREVIEW
-        MENUITEM "打印设置(&R)...",             ID_FILE_PRINT_SETUP
+        MENUITEM "打印(&P)...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "打印预览(&V)",                    ID_FILE_PRINT_PREVIEW
+        MENUITEM "打印设置(&R)...",                 ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "最近文件",                    ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "最近文件",                        ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "退出(&X)",                    ID_APP_EXIT
+        MENUITEM "退出(&X)",                      ID_APP_EXIT
     END
     POPUP "编辑(&E)"
     BEGIN
-        MENUITEM "撤消(&U)\tCtrl+Z",            ID_EDIT_UNDO
+        MENUITEM "撤消(&U)\tCtrl+Z",              ID_EDIT_UNDO
         MENUITEM SEPARATOR
-        MENUITEM "剪切(&T)\tCtrl+X",            ID_EDIT_CUT
-        MENUITEM "复制(&C)\tCtrl+C",            ID_EDIT_COPY
-        MENUITEM "粘贴(&P)\tCtrl+V",            ID_EDIT_PASTE
+        MENUITEM "剪切(&T)\tCtrl+X",              ID_EDIT_CUT
+        MENUITEM "复制(&C)\tCtrl+C",              ID_EDIT_COPY
+        MENUITEM "粘贴(&P)\tCtrl+V",              ID_EDIT_PASTE
     END
     POPUP "路径设计(&D)"
     BEGIN
-        MENUITEM "参数设置(&Setup Para)",       IDM_FIBER_PATH_CONTROL_PARAMETERS
-
-        MENUITEM "计算路径(&Compute Path)",     IDM_COMPUTE_FIBER_PATH
-        MENUITEM "丝嘴轨迹(&Payeye track)",     IDM_DESIGN_ALGEBRA_PATTERN
-        MENUITEM "应力测试(&Test press)",       ID_PRESSURE_TEST
+        MENUITEM "参数设置(&Setup Para)",           IDM_FIBER_PATH_CONTROL_PARAMETERS
+        MENUITEM "计算路径(&Compute Path)",         IDM_COMPUTE_FIBER_PATH
+        MENUITEM "丝嘴轨迹(&Payeye track)",         IDM_DESIGN_ALGEBRA_PATTERN
+        MENUITEM "应力测试(&Test press)",           ID_PRESSURE_TEST
     END
     POPUP "查看(&V)"
     BEGIN
-        MENUITEM "显示芯模(&Show  mandrel)",    ID_VIEW_DISPLAY_MANDREL
-        MENUITEM "路径仿真(Draw path)",         IDM_DRAW_FIBER_PATH
-        MENUITEM "设置动态路径(Setup path)",    IDM_DISPLAY_WINDING_SEQUENCE
-        MENUITEM "路径实时仿真(Dynamic show)",  IDM_AUTO_DISPLAY_WINDING_PROCESS
-
-        MENUITEM "设置丝嘴仿真(Setup &Payeye)", IDM_DRAW_FIBER_TAPE
+        MENUITEM "显示芯模(&Show  mandrel)",        ID_VIEW_DISPLAY_MANDREL
+        MENUITEM "路径仿真(Draw path)",             IDM_DRAW_FIBER_PATH
+        MENUITEM "设置动态路径(Setup path)",          IDM_DISPLAY_WINDING_SEQUENCE
+        MENUITEM "路径实时仿真(Dynamic show)",        IDM_AUTO_DISPLAY_WINDING_PROCESS
+        MENUITEM "设置丝嘴仿真(Setup &Payeye)",       IDM_DRAW_FIBER_TAPE
         MENUITEM "&Display parameter",          ID_VIEW_DISPLAY_PARAMETER
         MENUITEM SEPARATOR
         POPUP "Rotate Object"
@@ -213,23 +216,22 @@ BEGIN
         END
         MENUITEM "Auto rotation",               IDM_AUTO_ROTATE
         MENUITEM "Toggle mandrel display",      IDM_VIEW_DISABLE_MANDREL_DISPLAY
-
         MENUITEM "Toggel Tool Bar(&T)",         ID_VIEW_TOOLBAR
         MENUITEM "Toggle Status Bar(&S)",       ID_VIEW_STATUS_BAR
         MENUITEM "Set auto display elapse",     IDM_ADJUST_DISPLAY_ELAPSE
     END
     POPUP "窗口(&W)"
     BEGIN
-        MENUITEM "新建窗口(&N)",                ID_MENUITEM32806
-        MENUITEM "层叠(&C)",                    ID_WINDOW_CASCADE
-        MENUITEM "平铺(&T)",                    ID_WINDOW_TILE_HORZ
-        MENUITEM "排列图标(&A)",                ID_WINDOW_ARRANGE
+        MENUITEM "新建窗口(&N)",                    ID_MENUITEM32806
+        MENUITEM "层叠(&C)",                      ID_WINDOW_CASCADE
+        MENUITEM "平铺(&T)",                      ID_WINDOW_TILE_HORZ
+        MENUITEM "排列图标(&A)",                    ID_WINDOW_ARRANGE
         MENUITEM "New Winding &Angle Plot",     ID_WINDOW_WND_ANGEL
         MENUITEM "New Window of &Mandrel 3D View", ID_WINDOW_MANDREL
     END
     POPUP "帮助(&H)"
     BEGIN
-        MENUITEM "关于 ElbowCAD(&A)...",        ID_APP_ABOUT
+        MENUITEM "关于 ElbowCAD(&A)...",          ID_APP_ABOUT
     END
 END
 
@@ -239,7 +241,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
@@ -263,22 +265,20 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 148, 93
-STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOG 0, 0, 148, 93
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About ElbowCAD/CAM "
 FONT 12, "System"
 BEGIN
     ICON            IDI_ICON1,IDC_STATIC,115,17,20,20
-    LTEXT           "ElbowCAD Version 2.0 ",IDC_STATIC,13,19,77,12,
-                    SS_NOPREFIX
-    CONTROL         "Copyright (C) 2000, \nDesigned by Li Haisheng && Yu Yiyue\nAll rights reserved ",
-                    IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,13,37,
-                    125,28
+    LTEXT           "ElbowCAD Version 2.0 ",IDC_STATIC,13,19,77,12,SS_NOPREFIX
+    CONTROL         "Copyright (C) 2000, \nDesigned by Li Haisheng && Yu Yiyue\nAll rights reserved ",IDC_STATIC,
+                    "Static",SS_LEFTNOWORDWRAP | WS_GROUP,13,37,125,28
     DEFPUSHBUTTON   "确定",IDOK,49,70,50,14,WS_GROUP
 END
 
-IDD_CREATE_NEW_ELBOW DIALOG DISCARDABLE  0, 0, 152, 138
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CREATE_NEW_ELBOW DIALOG 0, 0, 152, 138
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Create new elbow mandrel"
 FONT 10, "System"
 BEGIN
@@ -292,16 +292,15 @@ BEGIN
     EDITTEXT        IDC_PIPE_RADIUS,71,37,54,16,ES_AUTOHSCROLL
     LTEXT           "Cylinder height :",IDC_STATIC,13,86,54,8
     EDITTEXT        IDC_CYLINDER_HEIGHT,71,82,54,16,ES_AUTOHSCROLL
-    CONTROL         "Have cylinder",IDC_HAVE_CYLINDER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,99,61,10
+    CONTROL         "Have cylinder",IDC_HAVE_CYLINDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,99,61,10
     LTEXT           "degree",IDC_STATIC,121,18,24,8
     LTEXT           "cm",IDC_STATIC,129,40,11,8
     LTEXT           "cm",IDC_STATIC,129,65,11,8
     LTEXT           "cm",IDC_STATIC,129,85,11,8
 END
 
-IDD_ROTATION_SPEED DIALOG DISCARDABLE  0, 0, 145, 68
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ROTATION_SPEED DIALOG 0, 0, 145, 68
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 10, "System"
 BEGIN
@@ -312,8 +311,8 @@ BEGIN
     LTEXT           "r/min",IDC_STATIC,111,18,27,8
 END
 
-IDD_FIBER_PATH_CONTROL DIALOG DISCARDABLE  0, 0, 264, 155
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_FIBER_PATH_CONTROL DIALOG 0, 0, 264, 155
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Winding parameters setup"
 FONT 10, "System"
 BEGIN
@@ -321,8 +320,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,165,136,42,14
     LTEXT           "Max Friction",IDC_STATIC,13,21,41,10
     LTEXT           "Reference winding angle(degree)",IDC_STATIC,13,37,64,18
-    LTEXT           "Ini-distance between payeye and mandrel(cm)",IDC_STATIC,
-                    140,17,80,19
+    LTEXT           "Ini-distance between payeye and mandrel(cm)",IDC_STATIC,140,17,80,19
     EDITTEXT        IDC_MAX_FRICTION,89,21,35,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_REFERENCE_WINDING_ANGLE,89,38,35,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_INITIAL_OFFSET,223,19,34,13,ES_AUTOHSCROLL
@@ -330,8 +328,7 @@ BEGIN
     EDITTEXT        IDC_FIBER_BAND_WIDTH,89,55,35,12,ES_AUTOHSCROLL
     GROUPBOX        "Material Parameters",IDC_STATIC,6,7,127,122
     GROUPBOX        "Machine Parameters",IDC_STATIC,134,7,127,122
-    CONTROL         "Use layer",IDC_USE_LAYER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,115,43,11
+    CONTROL         "Use layer",IDC_USE_LAYER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,115,43,11
     LTEXT           "Winding circuit",IDC_STATIC,13,88,53,10
     EDITTEXT        IDC_PATH_LOOPS,89,88,35,12,ES_AUTOHSCROLL
     LTEXT           "Fiber thickness (cm)",IDC_STATIC,13,73,70,11
@@ -348,14 +345,12 @@ BEGIN
     EDITTEXT        IDC_PAYEYE_ANGLE,223,84,34,13,ES_AUTOHSCROLL
     LTEXT           "Payout layer number",IDC_STATIC,140,103,69,8
     EDITTEXT        IDC_PAYOUT_LAYER,223,100,34,15,ES_AUTOHSCROLL
-    CONTROL         "Text file for machine",IDC_DATA_FORMAT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,140,116,79,10
-    CONTROL         "Data compress",IDC_COMPRESS_DATA,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,67,116,60,10
+    CONTROL         "Text file for machine",IDC_DATA_FORMAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,116,79,10
+    CONTROL         "Data compress",IDC_COMPRESS_DATA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,67,116,60,10
 END
 
-IDD_SEMI_WND_ANGLE_LAW DIALOG DISCARDABLE  0, 0, 234, 133
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SEMI_WND_ANGLE_LAW DIALOG 0, 0, 234, 133
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Semigeodesic Winding Angle Law Parameters"
 FONT 10, "System"
 BEGIN
@@ -377,31 +372,29 @@ BEGIN
     EDITTEXT        IDC_THETA0,58,88,34,13,ES_AUTOHSCROLL
 END
 
-IDD_WELCOME_DIALOG DIALOG DISCARDABLE  0, 0, 172, 86
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+IDD_WELCOME_DIALOG DIALOG 0, 0, 172, 86
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Welcome to ElBOWWIND CAD"
 FONT 15, "隶书"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,69,56,40,14
-    CONTROL         135,IDC_STATIC,"Static",SS_BITMAP,15,16,38,38
-    LTEXT           "欢迎使用ELBOWWIND系统软件\n作者 ：李海晟\n时间：2000年7月",
-                    IDC_STATIC,60,16,105,34
+    CONTROL         IDB_BITMAP3,IDC_STATIC,"Static",SS_BITMAP,15,16,38,38
+    LTEXT           "欢迎使用ELBOWWIND系统软件\n作者 ：李海晟\n时间：2000年7月",IDC_STATIC,60,16,105,34
 END
 
-IDD_DISPLAY_ELAPSE DIALOG DISCARDABLE  0, 0, 153, 75
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_DISPLAY_ELAPSE DIALOG 0, 0, 153, 75
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Auto display elapse"
 FONT 10, "System"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,20,42,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,83,42,50,14
     LTEXT           "Auto display elapse:",IDC_STATIC,18,20,69,10
-    EDITTEXT        IDC_AUTO_DISPLAY_ELAPSE,87,20,46,14,ES_AUTOHSCROLL | NOT 
-                    WS_TABSTOP
+    EDITTEXT        IDC_AUTO_DISPLAY_ELAPSE,87,20,46,14,ES_AUTOHSCROLL | NOT WS_TABSTOP
 END
 
-IDD_PRESS_DIALOG DIALOG DISCARDABLE  0, 0, 154, 89
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_PRESS_DIALOG DIALOG 0, 0, 154, 89
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog for pressure test"
 FONT 10, "System"
 BEGIN
@@ -415,19 +408,37 @@ BEGIN
     EDITTEXT        IDC_CYLINDER_LONGITUDE,93,45,40,14,ES_AUTOHSCROLL
 END
 
-IDD_HINT_DIALOG DIALOG DISCARDABLE  0, 0, 171, 68
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_HINT_DIALOG DIALOG 0, 0, 171, 68
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Hint dialog for unsaved data"
 FONT 10, "System"
 BEGIN
     DEFPUSHBUTTON   "Yes",IDOK,29,45,50,14
     PUSHBUTTON      "No",IDCANCEL,82,45,50,14
-    LTEXT           "Winding path data or payeye track data hasn't \n \nbeen saved . Do you want to save them ?",
-                    IDC_STATIC,10,13,152,28
+    LTEXT           "Winding path data or payeye track data hasn't \n \nbeen saved . Do you want to save them ?",IDC_STATIC,10,13,152,28
+END
+
+IDD_CREATE_NEW_TUBE DIALOGEX 0, 0, 211, 183
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 10, "System", 700, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,45,161,50,14
+    PUSHBUTTON      "取消",IDCANCEL,116,161,50,14
+    LTEXT           "A[半横轴]",IDC_STATIC,47,19,52,14
+    LTEXT           "B[半纵轴]",IDC_STATIC,47,37,52,14
+    LTEXT           "R[倒角半径]",IDC_STATIC,47,55,52,14
+    LTEXT           "C[长度]",IDC_STATIC,47,73,52,14
+    LTEXT           "X轴总长:2A+2R",IDC_STATIC,47,113,75,14
+    LTEXT           "Y轴总长:2B+2R",IDC_STATIC,47,128,77,14
+    LTEXT           "Z轴总长:C",IDC_STATIC,47,142,88,14
+    EDITTEXT        IDC_LENGTH_A,108,16,46,16,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LENGTH_B,108,34,46,16,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LENGTH_R,108,52,46,16,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LENGTH_C,108,70,46,16,ES_AUTOHSCROLL
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -450,18 +461,13 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "mfcogl1 Microsoft 基础类应用程序\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "mfcogl1\0"
-            VALUE "LegalCopyright", "版权所有 (C) 2000\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "mfcogl1.EXE\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "mfcogl1 应用程序\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "FileDescription", "mfcogl1 Microsoft 基础类应用程序"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "mfcogl1"
+            VALUE "LegalCopyright", "版权所有 (C) 2000"
+            VALUE "OriginalFilename", "mfcogl1.EXE"
+            VALUE "ProductName", "mfcogl1 应用程序"
+            VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
     BLOCK "VarFileInfo"
@@ -470,8 +476,6 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -479,7 +483,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -555,8 +559,27 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 61
     END
+
+    IDD_CREATE_NEW_TUBE, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
+    END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_CREATE_NEW_TUBE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -564,19 +587,19 @@ END
 // String Table
 //
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "ElbowCAD"
     IDR_MFCOGLTYPE          "\nElbowCAD\nElbowCAD\nElbowCAD 文件 (*.ogl)\n.ogl\nElbowCAD1.Document\nElbowCAD Document"
 END
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "ElbowCAD"
     AFX_IDS_IDLEMESSAGE     "就绪"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_EXT        "扩展名"
     ID_INDICATOR_CAPS       "大写"
@@ -586,7 +609,7 @@ BEGIN
     ID_INDICATOR_REC        "记录"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "建立新文档\n新建"
     ID_FILE_OPEN            "打开一个现有文档\n打开"
@@ -599,13 +622,13 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "显示整页\n打印预览"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "显示程序信息，版本号和版权\n关于"
     ID_APP_EXIT             "退出应用程序；提示保存文档\n退出"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "打开该文档"
     ID_FILE_MRU_FILE2       "打开该文档"
@@ -625,13 +648,13 @@ BEGIN
     ID_FILE_MRU_FILE16      "打开该文档"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_NEXT_PANE            "切换到下一个窗格\n下一窗格"
     ID_PREV_PANE            "切换回前一个窗格\n前一窗格"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_NEW           "为活动文档打开另一个窗口\n新建窗口"
     ID_WINDOW_ARRANGE       "将图标排列在窗口底部\n排列图标"
@@ -641,7 +664,7 @@ BEGIN
     ID_WINDOW_SPLIT         "将活动的窗口分隔成窗格\n分隔"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "删除被选对象\n删除"
     ID_EDIT_CLEAR_ALL       "全部删除\n全部删除"
@@ -656,13 +679,13 @@ BEGIN
     ID_EDIT_REDO            "重新执行先前已撤消的操作\n重新执行"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "显示或隐藏工具栏\n显隐工具栏"
     ID_VIEW_STATUS_BAR      "显示或隐藏状态栏\n显隐状态栏"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "改变窗口大小"
     AFX_IDS_SCMOVE          "改变窗口位置"
@@ -673,19 +696,19 @@ BEGIN
     AFX_IDS_SCCLOSE         "关闭活动的窗口并提示保存所有文档"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "把窗口恢复到正常大小"
     AFX_IDS_SCTASKLIST      "激活任务表"
     AFX_IDS_MDICHILD        "激活该窗口"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "关闭打印预览模式\n取消预阅"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDM_ROTATE              "To view the object after a rotation"
     IDM_ROTATE_WITH_X       "Rotate object round axis X\nRotate  round X"
@@ -697,7 +720,7 @@ BEGIN
     IDM_TRANSLATE_Z         "Translate object along axis Z\n Zoom in/out"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDM_VIEWING_DIRECTION   "Toggle viewing direction for rotating and translating\ntoggle viewing direction"
     IDM_SET_STEPS           "Set rotating and translating steps\n Set viewing steps"
@@ -708,7 +731,7 @@ BEGIN
     IDM_ROTATION_SPEED      "Set rotation speed for simulation\nRotation speed"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDM_DRAW_FIBER_PATH     "Draw fiber path\nDraw fiber path"
     IDM_DISPLAY_ALL         "te composite display list\ncoposite list"
@@ -732,7 +755,7 @@ BEGIN
                             "Reset winding process display to start \n Reset display to start"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDM_DISPLAY_NEXT_POINT  "Display next point in the winding process\n display next point"
     IDM_AUTO_DISPLAY_WINDING_PROCESS 
@@ -743,13 +766,18 @@ BEGIN
     ID_VIEW_DISPLAY_PARAMETER "Display mandrel and winding parameter"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_WNDCIRCUIT "                         "
     ID_CIRCUIT_NUMBER       "   "
 END
 
-#endif    // Chinese (P.R.C.) resources
+STRINGTABLE
+BEGIN
+    IDM_CREATE_NEW_TUBE_MANDREL "Create new tube mandrel"
+END
+
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

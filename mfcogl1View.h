@@ -74,6 +74,12 @@ public:
 	void InitFrustum();
 	GLfloat m_view_span_angle;
 	virtual ~CMfcogl1View();
+
+	/*added by LMK*/
+	void CMfcogl1View::CreateTubeDisplayList();
+	template<typename T>
+	void debug_show(T x);
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -120,6 +126,10 @@ protected:
 	afx_msg void OnAdjustDisplayElapse();
 	afx_msg void OnViewDisplayMandrel();
 	afx_msg void OnUpdateViewDisplayMandrel(CCmdUI* pCmdUI);
+
+	/*added by LMK*/
+	afx_msg void OnCreateNewTubeMandrel();
+
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
@@ -155,6 +165,14 @@ private:
 	GLfloat m_Y_translate;
 	GLfloat m_Z_translate;
 	GLint   m_elbow_cnt;
+
+	/*added by LMK*/
+	//dialog(IDC_LENGTH_A)->Class CreateNewTubeDlg(m_dlg_tube_a)->view(m_view_tube_a)
+	GLfloat m_view_tube_a;
+	GLfloat m_view_tube_b;
+	GLfloat m_view_tube_c;
+	GLfloat m_view_tube_r;
+
 };
 
 #ifndef _DEBUG  // debug version in mfcogl1View.cpp
