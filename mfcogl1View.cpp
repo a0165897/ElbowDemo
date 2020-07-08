@@ -155,12 +155,13 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	glEnable(GL_LIGHT0);
 	glDepthFunc(GL_LEQUAL); //without apparent effect
 	glEnable(GL_DEPTH_TEST);
-//    GLfloat light0Pos[4] = { 3.70F, 3.70F, 4.25F, 0.00F };
-	GLfloat light0Pos[4] = { 0.0, 0.0F, 1.0, 0.0F };
-	glLightfv(GL_LIGHT0, GL_POSITION, light0Pos);
+	/*changed by LMK*/
+	//It was a GL_POSITION setting,but didn't work.
+	GLfloat light0Pos[4] = { 0.05F, 0.05F, 0.05F, 0.0F };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light0Pos);
 	//glLighti(GL_LIGHT0,GL_SPOT_CUTOFF,5);
 	//CreateMandrelDisplayList();
-//	CreateFiberPathList();
+	//CreateFiberPathList();
 
 	if(m_elbow_cnt==0)
 	{
@@ -1373,45 +1374,38 @@ void CMfcogl1View::OnCreateNewTubeMandrel() {
 		m_view_tube_c = new_tube_dlg.m_dlg_tube_c;
 		m_view_tube_r = new_tube_dlg.m_dlg_tube_r;
 	}
-	//To Do: fix "CreateTubeDisplayList", fix this. 
+	CreateTubeDisplayList();
+	//to refresh screen
+	Invalidate(false);
 }
 
-void CMfcogl1View::CreateTubeDisplayList()
-{
-	GLfloat point1[3], point2[3], w, segmentw = 1, segmentc = m_view_tube_c;
-	int i = 0, flagx = 1, flagy = 1;
+void CMfcogl1View::CreateTubeDisplayList(){
+	GLfloat length_step = m_view_tube_c;
+	int i = 0, flagx = 1, flagy = 1, degree, angle_step = 10;
 	glNewList(MANDRELDISPLAYLIST, GL_COMPILE);
 
-	GLfloat matAmb[4] = { 0.3F, 0.5F, 0.8F, 1.00F };
+	//light and color setting.
 	GLfloat matDiff[4] = { 0.3F, 0.5F, 0.8F, 0.80F };
-	GLfloat matSpec[4] = { 0.30F, 0.30F, 0.30F, 1.00F };
-	GLfloat matShine = 60.00F;
+	GLfloat matSpec[4] = { 0.1F, 0.1F, 0.1F, 1.00F };
+	GLfloat matShine = 5.00F;
 
-	glMaterialfv(GL_FRONT, GL_AMBIENT, matAmb);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiff);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
 	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
-	glLineWidth(1);
 
+	//compute the mandrel.
 	glBegin(GL_TRIANGLE_STRIP);
-	glNormal3f(cos((360 - 2 * segmentw) * 3.14 / 180), sin((360 - 2 * segmentw) * 3.14 / 180), 0.0f);
-	glVertex3f(m_view_tube_a + m_view_tube_r * cos((360 - 2 * segmentw) * 3.14 / 180), -m_view_tube_b + m_view_tube_r * sin((360 - 2 * segmentw) * 3.14 / 180), segmentc);
-	glNormal3f(cos((360 - segmentw) * 3.14 / 180), sin((360 - segmentw) * 3.14 / 180), 0.0f);
-	glVertex3f(m_view_tube_a + m_view_tube_r * cos((360 - segmentw) * 3.14 / 180), -m_view_tube_b + m_view_tube_r * sin((360 - segmentw) * 3.14 / 180), 0);
-	for (w = 0; w < 360; w += segmentw) {
-		flagx = (w >= 90 && w < 270) ? -1 : 1;
-		flagy = (w >= 180 && w < 360) ? -1 : 1;
-		if (i % 2 == 0)
-		{
-			glNormal3f(cos(w * 3.14 / 180), sin(w * 3.14 / 180), 0.0f);
-			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(w * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(w * 3.14 / 180), segmentc);
+	//to fix the tiny gap between first and last triangle, add one more triangle to cover the first one at last.
+	for (degree = 0; degree <=360+angle_step; degree += angle_step) {
+		if (degree % 90 == 0) {
+			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * 3.14 / 180), length_step * (i++ % 2 - 0.5));
+			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * 3.14 / 180), length_step * (i++ % 2 - 0.5));
 		}
-		else
-		{
-			glNormal3f(cos(w * 3.14 / 180), sin(w * 3.14 / 180), 0.0f);
-			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(w * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(w * 3.14 / 180), 0);
-		}
-		i++;
+		flagx = (degree >= 90 && degree < 270) ? -1 : 1;
+		flagy = (degree >= 180 && degree < 360) ? -1 : 1;
+		glNormal3f(cos(degree * 3.14 / 180), sin(degree * 3.14 / 180), 0.0f);
+		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * 3.14 / 180), length_step*(i++%2-0.5));
+		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * 3.14 / 180), length_step * (i++ % 2 - 0.5));
 	}
 	glEnd();
 	glEndList();
