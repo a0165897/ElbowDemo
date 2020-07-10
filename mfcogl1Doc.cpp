@@ -10,6 +10,8 @@
 //#include "cdlgsemiwndanglelaw.h"
 #include "PressDialog.h"
 
+/*added by LMK*/
+#include "DlgFiberPathControlsTube.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -26,7 +28,7 @@ IMPLEMENT_DYNCREATE(CMfcogl1Doc, CDocument)
 
 BEGIN_MESSAGE_MAP(CMfcogl1Doc, CDocument)
 	//{{AFX_MSG_MAP(CMfcogl1Doc)
-	ON_COMMAND(IDM_FIBER_PATH_CONTROL_PARAMETERS, OnOpenFiberPathControlParametersDlg)
+	ON_COMMAND(IDM_FIBER_PATH_CONTROL_PARAMETERS, OnSwitchFiberPathControlDlg)
 	ON_COMMAND(IDM_COMPUTE_FIBER_PATH, OnComputeFiberPath)
 	ON_COMMAND(IDM_DESIGN_ALGEBRA_PATTERN, OnComputePayeye)
 	ON_COMMAND(ID_PRESSURE_TEST, OnPressureTest)
@@ -891,3 +893,23 @@ void CMfcogl1Doc::CalculateTrack(struct Mandrel mand,struct Miscellence misc,
 	return;     //ptrack;
 }
 
+/*added by LMK*/
+//Since now we have two mandrels(elbow,tube),choose right dialog to get parameters.
+void CMfcogl1Doc::OnSwitchFiberPathControlDlg() {
+	if (m_isShowing == 1) {//tube
+		OnOpenFiberPathControlTubeParametersDlg();
+	}
+	else if(m_isShowing == 2) {//elbow
+		OnOpenFiberPathControlParametersDlg();
+	}
+}
+
+void CMfcogl1Doc::OnOpenFiberPathControlTubeParametersDlg() {
+	CDlgFiberPathControlsTube fpTubeDlg;
+	if (IDOK == fpTubeDlg.DoModal()) {
+		ResetWndDesign();
+		m_doc_tube_winding_angle = fpTubeDlg.m_dlg_tube_winding_angle;
+		m_doc_tube_band_width = fpTubeDlg.m_dlg_tube_band_width;
+		debug_show(m_doc_tube_band_width);
+	}
+}

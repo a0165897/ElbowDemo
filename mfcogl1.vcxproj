@@ -139,6 +139,7 @@
     <ClCompile Include="CreateNewElbowDlg.cpp" />
     <ClCompile Include="CreateNewTubeDlg.cpp" />
     <ClCompile Include="DlgFiberPathControls.cpp" />
+    <ClCompile Include="DlgFiberPathControlsTube.cpp" />
     <ClCompile Include="HintDialog.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="mfcogl1.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="CreateNewTubeDlg.h" />
     <ClInclude Include="datatype.h" />
     <ClInclude Include="DlgFiberPathControls.h" />
+    <ClInclude Include="DlgFiberPathControlsTube.h" />
     <ClInclude Include="HintDialog.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="mfcogl1.h" />

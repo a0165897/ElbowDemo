@@ -9,6 +9,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include "HintDialog.h"
+#include<typeinfo>
 
 const float tolerance=1.0e-06;
 const int size=800;
@@ -48,6 +49,10 @@ private:
 	float Offset,eyeWidth,eyeAccelerate,rollerWidth,payeye_offset;
 	short int track_layer;
 
+	/*added by LMK*/
+	float m_doc_tube_band_width;
+	float m_doc_tube_winding_angle;
+
 public:
 	int quarter_elbow,circuit_step,total_cylinder,circuit_num;
 	int m,k;
@@ -62,7 +67,8 @@ public:
 	double m_sweep_radius,m_height;
 	double m_pipe_radius,m_span_angle;
 	float deviation;
-	
+	/*added by LMK*/
+	int m_isShowing;//elbow or tube
 public:
 
 // Overrides
@@ -111,8 +117,26 @@ public:
 	void CalculateTrack(struct Mandrel mand,struct Miscellence misc,
 				float epsilon,struct PathPoint *path,
 				int countPathPoint);
-
 	virtual ~CMfcogl1Doc();
+
+	/*added by LMK*/
+	void OnSwitchFiberPathControlDlg();
+
+	template<typename T>
+	void debug_show(T x) {
+		CString strMsg;
+		if (typeid(x) == typeid(int)) {
+			strMsg.Format("Value:%d\n", x);
+		}
+		if (typeid(x) == typeid(float)) {
+			strMsg.Format("Value:%f\n", x);
+		}
+		if (typeid(x) == typeid(char*)) {
+			strMsg.Format("Value:%s\n", x);
+		}
+		MessageBoxA(0, strMsg, "debug", 0);
+	}
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -136,6 +160,10 @@ protected:
 	afx_msg void OnFileSave();
 	afx_msg void OnFileOpen();
 	afx_msg void OnViewDisplayParameter();
+
+	/*added by LMK*/
+	afx_msg void OnOpenFiberPathControlTubeParametersDlg();
+
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:

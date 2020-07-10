@@ -77,8 +77,6 @@ public:
 
 	/*added by LMK*/
 	void CMfcogl1View::CreateTubeDisplayList();
-	template<typename T>
-	void debug_show(T x);
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -167,10 +165,10 @@ private:
 	GLint   m_elbow_cnt;
 
 	/*added by LMK*/
-	//dialog(IDC_LENGTH_A)->Class CreateNewTubeDlg(m_dlg_tube_a)->view(m_view_tube_a)
+	//dialog(IDC_TUBE_WIDTH/2 - RADIUS)->Class CreateNewTubeDlg(m_dlg_tube_a)->view(m_view_tube_a)
 	GLfloat m_view_tube_a;
 	GLfloat m_view_tube_b;
-	GLfloat m_view_tube_c;
+	GLfloat m_view_tube_length;
 	GLfloat m_view_tube_r;
 
 };

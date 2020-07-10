@@ -21,6 +21,7 @@
 #define IDD_PRESS_DIALOG                143
 #define IDD_HINT_DIALOG                 144
 #define IDD_CREATE_NEW_TUBE             145
+#define IDD_FIBER_PATH_CONTROL_TUBE     147
 #define IDC_SPAN_ANGLE                  1000
 #define IDC_SWEEP_RADIUS                1001
 #define IDC_PIPE_RADIUS                 1002
@@ -59,10 +60,13 @@
 #define IDC_PAYOUT_LAYER                1034
 #define IDC_DATA_FORMAT                 1035
 #define IDC_COMPRESS_DATA               1036
-#define IDC_LENGTH_A                    1039
-#define IDC_LENGTH_B                    1040
-#define IDC_LENGTH_R                    1041
-#define IDC_LENGTH_C                    1042
+#define IDC_TUBE_WIDTH                  1039
+#define IDC_TUBE_HEIGHT                 1040
+#define IDC_TUBE_WINDING_ANGLE          1040
+#define IDC_TUBE_RADIUS                 1041
+#define IDC_TUBE_WINDING_ANGLE2         1041
+#define IDC_TUBE_BAND_WIDTH             1041
+#define IDC_TUBE_LENGTH                 1042
 #define IDM_ROTATE                      32771
 #define IDM_ROTATE_WITH_X               32772
 #define IDM_ROTATE_WITH_Y               32773
@@ -107,9 +111,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        147
+#define _APS_NEXT_RESOURCE_VALUE        149
 #define _APS_NEXT_COMMAND_VALUE         32839
-#define _APS_NEXT_CONTROL_VALUE         1040
+#define _APS_NEXT_CONTROL_VALUE         1041
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

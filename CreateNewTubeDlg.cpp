@@ -14,7 +14,10 @@
 CCreateNewTubeDlg::CCreateNewTubeDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_CREATE_NEW_TUBE, pParent)
 {
-
+	m_dlg_tube_width = 0;
+	m_dlg_tube_height = 0;
+	m_dlg_tube_length = 0;
+	m_dlg_tube_r = 0;
 }
 
 CCreateNewTubeDlg::~CCreateNewTubeDlg()
@@ -24,18 +27,26 @@ CCreateNewTubeDlg::~CCreateNewTubeDlg()
 void CCreateNewTubeDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_LENGTH_A, m_dlg_tube_a);
-	DDX_Text(pDX, IDC_LENGTH_B, m_dlg_tube_b);
-	DDX_Text(pDX, IDC_LENGTH_C, m_dlg_tube_c);
-	DDX_Text(pDX, IDC_LENGTH_R, m_dlg_tube_r);
+	DDX_Text(pDX, IDC_TUBE_WIDTH, m_dlg_tube_width);
+	DDV_MinMaxFloat(pDX, m_dlg_tube_width, 0.f, 1000.f);
+	DDX_Text(pDX, IDC_TUBE_HEIGHT, m_dlg_tube_height);
+	DDV_MinMaxFloat(pDX, m_dlg_tube_height, 0.f, 1000.f);
+	DDX_Text(pDX, IDC_TUBE_LENGTH, m_dlg_tube_length);
+	DDV_MinMaxFloat(pDX, m_dlg_tube_length, 0.f, 1000.f);
+	DDX_Text(pDX, IDC_TUBE_RADIUS, m_dlg_tube_r);
+	//make sure the maximum of radius smaller than half width. 
+	DDV_MinMaxFloat(pDX, m_dlg_tube_r, 0.f, min(m_dlg_tube_width/2, m_dlg_tube_height/2));
+	m_dlg_tube_a=m_dlg_tube_width/2 -  m_dlg_tube_r;
+	m_dlg_tube_b = m_dlg_tube_height/2 - m_dlg_tube_r;
+
 }
 
 BOOL CCreateNewTubeDlg::OnInitDialog() {
 	CDialog::OnInitDialog();
-	m_dlg_tube_a = 16;
-	m_dlg_tube_b = 8;
-	m_dlg_tube_c = 60;
-	m_dlg_tube_r = 10;
+	m_dlg_tube_width = 45.8;
+	m_dlg_tube_height = 28.5;
+	m_dlg_tube_length = 78;
+	m_dlg_tube_r = 7.2;
 	UpdateData(FALSE);
 	return TRUE;
 }

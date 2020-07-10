@@ -10,6 +10,7 @@
 #include "mfcogl1View.h"
 #include <math.h>
 
+
 /*added by LMK */
 #include "CreateNewTubeDlg.h"
 
@@ -511,6 +512,8 @@ void CMfcogl1View::OnCreateNewElbowMandrel()
 		pDoc->ModifyMandrelParameters(m_view_sweep_radius,m_view_pipe_radius,m_view_span_angle,m_view_cylinder_height);
 		BOOL bErase=FALSE; //Keep background unErased
 		Invalidate(bErase); //Erase only foreground
+		/*added by LMK*/
+		pDoc->m_isShowing = 2;
 	}
 
 }
@@ -1357,7 +1360,7 @@ void CMfcogl1View::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	m_cview_enable_tape_display=TRUE;
 	m_bCanDisplayPayeye=FALSE;
 	m_bCanDisplayPath=FALSE;
-	CreateMandrelDisplayList();
+	CreateTubeDisplayList();
 	Invalidate(FALSE);
 	// TODO: Add your specialized code here and/or call the base class
 }
@@ -1365,13 +1368,14 @@ void CMfcogl1View::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 /*added by LMK*/
 void CMfcogl1View::OnCreateNewTubeMandrel() {
 	CMfcogl1Doc* pDoc = GetDocument();
+	pDoc->m_isShowing = 1;
 	CCreateNewTubeDlg new_tube_dlg;
 	int choice = new_tube_dlg.DoModal();
 	if (choice == IDOK){
 		pDoc->ResetWndDesign();
 		m_view_tube_a = new_tube_dlg.m_dlg_tube_a;
 		m_view_tube_b = new_tube_dlg.m_dlg_tube_b;
-		m_view_tube_c = new_tube_dlg.m_dlg_tube_c;
+		m_view_tube_length = new_tube_dlg.m_dlg_tube_length;
 		m_view_tube_r = new_tube_dlg.m_dlg_tube_r;
 	}
 	CreateTubeDisplayList();
@@ -1380,12 +1384,12 @@ void CMfcogl1View::OnCreateNewTubeMandrel() {
 }
 
 void CMfcogl1View::CreateTubeDisplayList(){
-	GLfloat length_step = m_view_tube_c;
+	GLfloat length_step = m_view_tube_length;
 	int i = 0, flagx = 1, flagy = 1, degree, angle_step = 10;
 	glNewList(MANDRELDISPLAYLIST, GL_COMPILE);
 
 	//light and color setting.
-	GLfloat matDiff[4] = { 0.3F, 0.5F, 0.8F, 0.80F };
+	GLfloat matDiff[4] = { 0.4F, 0.6F, 0.6F, 1.00F };
 	GLfloat matSpec[4] = { 0.1F, 0.1F, 0.1F, 1.00F };
 	GLfloat matShine = 5.00F;
 
@@ -1395,34 +1399,18 @@ void CMfcogl1View::CreateTubeDisplayList(){
 
 	//compute the mandrel.
 	glBegin(GL_TRIANGLE_STRIP);
-	//to fix the tiny gap between first and last triangle, add one more triangle to cover the first one at last.
-	for (degree = 0; degree <=360+angle_step; degree += angle_step) {
+	for (degree = 0; degree <=360; degree += angle_step) {
 		if (degree % 90 == 0) {
-			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * 3.14 / 180), length_step * (i++ % 2 - 0.5));
-			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * 3.14 / 180), length_step * (i++ % 2 - 0.5));
+			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 - 0.5));
+			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 - 0.5));
 		}
 		flagx = (degree >= 90 && degree < 270) ? -1 : 1;
 		flagy = (degree >= 180 && degree < 360) ? -1 : 1;
-		glNormal3f(cos(degree * 3.14 / 180), sin(degree * 3.14 / 180), 0.0f);
-		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * 3.14 / 180), length_step*(i++%2-0.5));
-		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * 3.14 / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * 3.14 / 180), length_step * (i++ % 2 - 0.5));
+		glNormal3f(cos(degree * PI / 180), sin(degree * PI / 180), 0.0f);
+		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 - 0.5));
+		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 - 0.5));
 	}
 	glEnd();
 	glEndList();
 }
 
-#include<typeinfo>
-template<typename T>
-void CMfcogl1View::debug_show(T x) {
-	CString strMsg;
-	if (typeid(x) == typeid(int)) {
-		strMsg.Format("Value:%d\n", x);
-	}
-	if (typeid(x) == typeid(float)) {
-		strMsg.Format("Value:%f\n", x);
-	}
-	if (typeid(x) == typeid(char *)) {
-		strMsg.Format("Value:%s\n", x);
-	}
-	MessageBox(strMsg); 
-}

@@ -12,11 +12,15 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_CREATE_NEW_TUBE };
 #endif
+	//width = 2a+2r  a is half width of the flat area.
+	float m_dlg_tube_width;
+	//height = 2b+2r  b is half height of the flat area.
+	float m_dlg_tube_height;
+	float m_dlg_tube_length;
 	float m_dlg_tube_a;
 	float m_dlg_tube_b;
-	float m_dlg_tube_c;
 	float m_dlg_tube_r;
-
+	
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	virtual BOOL OnInitDialog();
