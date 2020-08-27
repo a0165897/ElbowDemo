@@ -10,9 +10,35 @@
 #endif // _MSC_VER > 1000
 #include "HintDialog.h"
 #include<typeinfo>
+#include <deque>
 
 const float tolerance=1.0e-06;
 const int size=800;
+
+/*global tube model
+	全局的芯模相关数据
+*/
+struct model {
+	double angle;//缠绕角度(与旋转轴夹角)
+	double width;//纤维带宽度
+	float stepLength;
+	GLfloat a, b, length, r;//a,b 半横轴/纵轴长度
+};
+/*缠绕端点的位置*/
+struct position {
+	float x, y, z, d;//direction back or go
+};
+
+struct vector {
+	float x, y, z;
+};
+
+/*缠绕接触点的位置*/
+struct TubePoint {
+	float x, y, z, normal, tPoint;//对于柱状物法向必然垂直于径向，因此只记录法向量的旋转角（rad），以X轴正向起始，逆时针为正。
+	vector tangent;
+};
+
 struct PathPoint
 {
 	float phi;
@@ -50,8 +76,17 @@ private:
 	short int track_layer;
 
 	/*added by LMK*/
+	int testStop = 1;
+	model model;
+	position position;
 	float m_doc_tube_band_width;
 	float m_doc_tube_winding_angle;
+	float windingPathStep;
+	float tmpAngle;
+	TubePoint tempTubePoint;
+	std::deque<struct TubePoint>* TubePointList;//缠绕接触点序列 
+	std::deque<struct Track>* TubeTrackListTime;//缠绕机器路径序列 等时
+	std::deque<struct TubePoint>* TubePointListTime;
 
 public:
 	int quarter_elbow,circuit_step,total_cylinder,circuit_num;
@@ -67,6 +102,7 @@ public:
 	double m_sweep_radius,m_height;
 	double m_pipe_radius,m_span_angle;
 	float deviation;
+
 	/*added by LMK*/
 	int m_isShowing;//elbow or tube
 public:
@@ -121,6 +157,19 @@ public:
 
 	/*added by LMK*/
 	void OnSwitchFiberPathControlDlg();
+	void OnSwitchComputeFiberPath();
+
+	afx_msg void OnRenderSinglePath();
+	afx_msg int OnRenderLinePart(int state);
+	afx_msg int OnRenderCurvePart(int state);
+	afx_msg void OnComputeTubePath();
+	afx_msg int OnGenerateTubeWindingOrder(struct position* p, std::deque<struct position>* pque);
+	afx_msg void OnGeneratePosition(struct position* p, std::deque<struct position>* pque);
+	void updatePosition(float* nextPoint);
+	void insertPoint(float* nextPoint);
+	int outTubeEdge();
+	std::deque<TubePoint>::iterator updateTubeTrackListTime(std::deque<TubePoint>::iterator tmpTrack);
+	void OnComputeStartAngle();
 
 	template<typename T>
 	void debug_show(T x) {
@@ -131,11 +180,15 @@ public:
 		if (typeid(x) == typeid(float)) {
 			strMsg.Format("Value:%f\n", x);
 		}
-		if (typeid(x) == typeid(char*)) {
+		if (typeid(x) == typeid(const char *)) {
 			strMsg.Format("Value:%s\n", x);
+		}
+		else {
+			strMsg.Format("missing template typeID:%s\n", typeid(x).name());
 		}
 		MessageBoxA(0, strMsg, "debug", 0);
 	}
+	//END LMK
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -163,6 +216,7 @@ protected:
 
 	/*added by LMK*/
 	afx_msg void OnOpenFiberPathControlTubeParametersDlg();
+	afx_msg void OnComputeFiberPathTube();
 
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

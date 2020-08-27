@@ -45,6 +45,9 @@ BEGIN_MESSAGE_MAP(CMfcogl1View, CView)
 	ON_UPDATE_COMMAND_UI(IDM_LINE_POLYGON, OnUpdateLinePolygonMode)
 	ON_COMMAND(IDM_AUTO_ROTATE, OnAutoRotate)
 	ON_UPDATE_COMMAND_UI(IDM_AUTO_ROTATE, OnUpdateAutoRotate)
+	ON_WM_MOUSEWHEEL()
+	ON_WM_MBUTTONDOWN()
+	ON_WM_MBUTTONUP()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_TIMER()
 	ON_WM_MOUSEMOVE()
@@ -551,8 +554,8 @@ void CMfcogl1View::InitFrustum()
 	glMatrixMode(GL_MODELVIEW);
 	
 	m_viewing_sign=1;
-	m_translate_step=h/10;
-	m_rotate_step=15.0F;//in degree
+	m_translate_step=h/20;
+	m_rotate_step=10.0F;//in degree
 	m_X_translate=0.0F;
 	m_Y_translate=0.0F;
 }
@@ -593,8 +596,8 @@ void CMfcogl1View::OnAutoRotate()
 {
 	m_auto_rotate=TRUE;
 	m_cview_auto_draw_two_points= !m_auto_rotate;
-	SetTimer(0,100,NULL);
-	m_angle_increment=0.1*m_view_rotation_speed*360/60;
+	SetTimer(0,10,NULL);
+	m_angle_increment=0.01*m_view_rotation_speed*360/60;
 	m_Xangle=0;
 	//m_Yangle=-45;//rotate the mandrel to center with z axis
 //	m_Yangle=-(90-m_view_span_angle/2)*2;
@@ -612,12 +615,24 @@ void CMfcogl1View::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	if(m_auto_rotate)
 	{
-		KillTimer(0);	
+		//KillTimer(0);	
 		CView::OnLButtonDown(nFlags, point);
-		m_auto_rotate=FALSE;
+		//m_auto_rotate=FALSE;
 	}
 	SetCapture();
 	m_mouse_down_point=point;
+}
+
+void CMfcogl1View::OnMButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_auto_rotate)
+	{
+		//KillTimer(0);
+		CView::OnMButtonDown(nFlags, point);
+		//m_auto_rotate = FALSE;
+	}
+	SetCapture();
+	m_mouse_down_point = point;
 }
 
 void CMfcogl1View::OnTimer(UINT nIDEvent) 
@@ -655,20 +670,40 @@ void CMfcogl1View::OnTimer(UINT nIDEvent)
 
 void CMfcogl1View::OnMouseMove(UINT nFlags, CPoint point) 
 {
-	if(GetCapture()==this)
+	if(GetCapture()==this&&nFlags==MK_LBUTTON)
 	{
 		m_Xangle+=(GLfloat)(point.y-m_mouse_down_point.y)/2;
 		m_Yangle+=(GLfloat)(point.x-m_mouse_down_point.x)/2;
 		Invalidate(FALSE);
 		m_mouse_down_point=point;
 	}
+	if (GetCapture() == this && nFlags == MK_MBUTTON)//Êó±êÖÐ¼ü
+	{
+		m_Y_translate += -(GLfloat)(point.y - m_mouse_down_point.y) / 2;
+		m_X_translate += (GLfloat)(point.x - m_mouse_down_point.x) / 2;
+		Invalidate(FALSE);
+		m_mouse_down_point = point;
+	}
 	CView::OnMouseMove(nFlags, point);
+}
+
+BOOL CMfcogl1View::OnMouseWheel(UINT   nFlags, short   zDelta, CPoint   pt) {
+	m_Z_translate += zDelta;
+	Invalidate(FALSE);
+	CView::OnMouseWheel(nFlags, zDelta, pt);
+	return true;
 }
 
 void CMfcogl1View::OnLButtonUp(UINT nFlags, CPoint point) 
 {
 	ReleaseCapture();	
 	CView::OnLButtonUp(nFlags, point);
+}
+
+void CMfcogl1View::OnMButtonUp(UINT nFlags, CPoint point)
+{
+	ReleaseCapture();
+	CView::OnMButtonUp(nFlags, point);
 }
 
 void CMfcogl1View::OnSetRotationSpeed() 
@@ -1360,7 +1395,7 @@ void CMfcogl1View::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	m_cview_enable_tape_display=TRUE;
 	m_bCanDisplayPayeye=FALSE;
 	m_bCanDisplayPath=FALSE;
-	CreateTubeDisplayList();
+	//CreateTubeDisplayList();
 	Invalidate(FALSE);
 	// TODO: Add your specialized code here and/or call the base class
 }

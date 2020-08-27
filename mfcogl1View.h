@@ -107,9 +107,12 @@ protected:
 	afx_msg void OnAutoRotate();
 	afx_msg void OnUpdateAutoRotate(CCmdUI* pCmdUI);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonUp(UINT nFlags, CPoint point);
+	afx_msg BOOL OnMouseWheel(UINT   nFlags, short   zDelta, CPoint   pt);
 	afx_msg void OnSetRotationSpeed();
 	afx_msg void OnDrawFiberPath();
 	afx_msg void OnDisplayAll();
@@ -163,7 +166,7 @@ private:
 	GLfloat m_Y_translate;
 	GLfloat m_Z_translate;
 	GLint   m_elbow_cnt;
-
+public:
 	/*added by LMK*/
 	//dialog(IDC_TUBE_WIDTH/2 - RADIUS)->Class CreateNewTubeDlg(m_dlg_tube_a)->view(m_view_tube_a)
 	GLfloat m_view_tube_a;

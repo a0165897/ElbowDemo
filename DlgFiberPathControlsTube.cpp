@@ -29,8 +29,8 @@ void CDlgFiberPathControlsTube::DoDataExchange(CDataExchange* pDX)
 
 BOOL CDlgFiberPathControlsTube::OnInitDialog() {
 	CDialog::OnInitDialog();
-	m_dlg_tube_winding_angle = 60.0f;
-	m_dlg_tube_band_width = 2.0f;
+	m_dlg_tube_winding_angle = 30.0f;
+	m_dlg_tube_band_width = 5.0f;
 	UpdateData(FALSE);
 	return TRUE;
 }

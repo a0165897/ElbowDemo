@@ -43,10 +43,10 @@ void CCreateNewTubeDlg::DoDataExchange(CDataExchange* pDX)
 
 BOOL CCreateNewTubeDlg::OnInitDialog() {
 	CDialog::OnInitDialog();
-	m_dlg_tube_width = 45.8;
-	m_dlg_tube_height = 28.5;
-	m_dlg_tube_length = 78;
-	m_dlg_tube_r = 7.2;
+	m_dlg_tube_width = 50;
+	m_dlg_tube_height = 30;
+	m_dlg_tube_length = 100;
+	m_dlg_tube_r = 5;
 	UpdateData(FALSE);
 	return TRUE;
 }
