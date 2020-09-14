@@ -843,6 +843,7 @@ void CMfcogl1Doc::OnFileOpen()
 {
 	if((!m_bSavePath&&m_bCanDisplayFiber)||(!m_bSavePayeye&&m_bPayeyeComplete))
 	{
+
 		CHintDialog hdlg;
 		if(hdlg.DoModal()==IDOK)return;
 		else ResetWndDesign();
@@ -907,15 +908,48 @@ void CMfcogl1Doc::OnSwitchFiberPathControlDlg() {
 }
 
 void CMfcogl1Doc::OnOpenFiberPathControlTubeParametersDlg() {
+
 	CDlgFiberPathControlsTube fpTubeDlg;
 	if (IDOK == fpTubeDlg.DoModal()) {
 		ResetWndDesign();
 		m_doc_tube_winding_angle = fpTubeDlg.m_dlg_tube_winding_angle * PI / 180;
 		m_doc_tube_band_width = fpTubeDlg.m_dlg_tube_band_width;
+		m_doc_tube_cut_num = fpTubeDlg.m_dlg_tube_cut_num;
 	}
 	m_bCanComputing = true;
-}
 
+	CMfcogl1View* pView;
+	POSITION pos = GetFirstViewPosition();
+	pView = (CMfcogl1View*)GetNextView(pos);
+
+	model.a = pView->m_view_tube_a + 0.1;
+	model.b = pView->m_view_tube_b + 0.1;
+	model.length = pView->m_view_tube_length;
+	model.r = pView->m_view_tube_r;
+	model.angle = m_doc_tube_winding_angle;
+	model.width = m_doc_tube_band_width;
+
+	float round = 2 * PI * model.r + 4 * model.a + 4 * model.b;
+	float real_width = model.width / abs(cos(model.angle));
+	int M0 = ceil(round / real_width);//返回大于等于它的最小整数
+	float interval = round / M0;
+	cutNum = m_doc_tube_cut_num;
+	int rem = (M0 + 1) % cutNum;//最小互素数 27  1 5 9 13 17 21 25 2   最小切点数7
+	if (rem == 0) {
+		jumpNum = (M0 + 1) / cutNum;
+	}
+	else {
+		jumpNum = -1;
+	}
+	CString STemp;
+	STemp.Format(_T("纱宽(修正) = %.3f mm\n等分数=%d\n缠绕角 = %.3f degree\n切点数=%d\n跳跃数=%d"), real_width, M0, fpTubeDlg.m_dlg_tube_winding_angle,cutNum,jumpNum);
+	AfxMessageBox(STemp);
+	if (jumpNum == -1) {
+		OnOpenFiberPathControlTubeParametersDlg();
+	}
+
+}
+//纤维束
 void CMfcogl1Doc::OnSwitchComputeFiberPath() {
 	if (m_isShowing == 1) {//tube
 		OnComputeFiberPathTube();
@@ -924,13 +958,13 @@ void CMfcogl1Doc::OnSwitchComputeFiberPath() {
 		OnComputeFiberPath();
 	}
 }
-
+//方管纤维束
 void CMfcogl1Doc::OnComputeFiberPathTube() {
 	if (m_bCanComputing == true)
 	{
 		/* algorithm:
 			step1:according to origin angle and width, and model, draw a path from origin place to edge
-			step2:according to algebraic pattern(M,K), decide which edge point to wind back
+			step2:according to algebraic pattern(M,	), decide which edge point to wind back
 			step3:keep the winding angle, wind to another edge,back to step2,until winded M time.
 		*/
 
@@ -938,24 +972,18 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 		POSITION pos = GetFirstViewPosition();
 		pView = (CMfcogl1View*)GetNextView(pos);
 
-		model.a = pView->m_view_tube_a+0.1;
-		model.b = pView->m_view_tube_b+0.1;
-		model.length = pView->m_view_tube_length;
-		model.r = pView->m_view_tube_r;
-		model.angle = m_doc_tube_winding_angle;
-		model.width = m_doc_tube_band_width;
 		model.stepLength = 0;
-
-		TubePointList = new std::deque<struct TubePoint>;
-		int M0 = ceil((2 * PI * model.r + 4 * model.a + 4 * model.b) / (model.width / abs(cos(model.angle))));
-		struct position* p = new struct position[2 * M0 + 2];
-		std::deque<struct position>* pque = new std::deque<struct position>;
-		//distanceE = new std::deque<float>;
-		windingPathStep = 0.02;
+		windingPathStep = 0.1;
 		tmpAngle = 0;
-		int totalNum = OnGenerateTubeWindingOrder(p, pque);
+		int M0 = ceil((2 * PI * model.r + 4 * model.a + 4 * model.b) / (model.width / abs(cos(model.angle))));
+		std::deque<struct position>* pque = new std::deque<struct position>;
+		TubePointList = new std::deque<struct TubePoint>;
 		TubeTrackListTime = new std::deque<struct Track>;
 		TubePointListTime = new std::deque<struct TubePoint>;
+		kList = new std::deque<int>;
+		distanceE = new std::deque<float>;
+
+		int totalNum = OnGenerateTubeWindingOrder( pque);
 		//generate GL list
 		glNewList(FIBER_PATH_LIST, GL_COMPILE); //FIBER_PATH_LIST     2
 
@@ -973,146 +1001,202 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 		position.x = pque->front().x;
 		position.y = pque->front().y;
 		position.z = pque->front().z;
+		kList->push_front(pque->front().i);
 		pque->erase(pque->begin());
 		OnRenderSinglePath();
 		//OnComputeTubePayeye();
 		while (pque->size() != 0 && testStop) {
-			TubePointList = new std::deque<struct TubePoint>;
-			OnGeneratePosition(p, pque);//保证pque算完之后，tmpAngle在pque->front之后
+			//TubePointList = new std::deque<struct TubePoint>;
+			OnGeneratePosition(pque);//
 			OnRenderSinglePath();
 			//OnComputeStartAngle();
-		//	OnComputeTubePayeye();			//计算一条纤维带
+			//OnComputeTubePayeye();			//计算一条纤维带
 		}
-
+		m_WindingCount[0] = TubePointList->size();
 		AfxMessageBox("纤维路径计算完毕\ntube Track Computation Finished.");
 
-		m_bCanDisplayFiber = true;
+ 		m_bCanDisplayFiber = true;
 		glEndList();
 		pView->m_cview_enable_tape_display = false;
 		pView->Invalidate(false);
-		delete p;
 	}
 	else{
 		AfxMessageBox(_T("请先设置纤维参数\nPlease setup parameter first."));
 	}
 }
 
-int CMfcogl1Doc::OnGenerateTubeWindingOrder(struct position* p, std::deque<struct position>* pque) {
+int CMfcogl1Doc::OnGenerateTubeWindingOrder(std::deque<struct position>* pque) {
 	//设置一组位于两端的position,符合代数模式 并生成所有路径起点
-	int M0 = ceil((2 * PI * model.r + 4 * model.a + 4 * model.b) / (model.width / abs(cos(model.angle))));
-	float interval = (2 * PI * model.r + 4 * model.a + 4 * model.b) / M0;
+	float round = 2 * PI * model.r + 4 * model.a + 4 * model.b;
+	int M0 = ceil( round / ( model.width / abs(cos(model.angle)) )  );//返回大于等于它的最小整数
+	float interval =round / M0;
 	float halfInterval = interval / 2;
 	int i = 0;
-
-	for (; i * interval < model.a; i++) {
-		p[i].x = i * interval;
-		p[i].y = model.b + model.r;
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
+	struct position p;
+	for (i = 0; i * interval < model.a; i++) {
+		p.x = i * interval;
+		p.y = model.b + model.r;
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 	for (; i * interval < model.a + PI * model.r / 2; i++) {
-		p[i].x = model.a + model.r * sin((i * interval - model.a) / model.r);
-		p[i].y = model.b + model.r * cos((i * interval - model.a) / model.r);
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
-
+		p.x = model.a + model.r * sin((i * interval - model.a) / model.r);
+		p.y = model.b + model.r * cos((i * interval - model.a) / model.r);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 	for (; i * interval < model.a + PI * model.r / 2 + 2 * model.b; i++) {
-		p[i].x = model.a + model.r;
-		p[i].y = model.b - (i * interval - model.a - PI * model.r / 2);
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
-
+		p.x = model.a + model.r;
+		p.y = model.b - (i * interval - model.a - PI * model.r / 2);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 	for (; i * interval < model.a + PI * model.r + 2 * model.b; i++) {
-		p[i].x = model.a + model.r * cos((i * interval - (model.a + PI * model.r / 2 + 2 * model.b)) / model.r);
-		p[i].y = -model.b - model.r * sin((i * interval - (model.a + PI * model.r / 2 + 2 * model.b)) / model.r);
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
+		p.x = model.a + model.r * cos((i * interval - (model.a + PI * model.r / 2 + 2 * model.b)) / model.r);
+		p.y = -model.b - model.r * sin((i * interval - (model.a + PI * model.r / 2 + 2 * model.b)) / model.r);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 	for (; i * interval < 3 * model.a + PI * model.r + 2 * model.b; i++) {
-		p[i].x = 2 * model.a - i * interval + PI * model.r + 2 * model.b;
-		p[i].y = -model.b - model.r;
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
+		p.x = 2 * model.a - i * interval + PI * model.r + 2 * model.b;
+		p.y = -model.b - model.r;
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 	for (; i * interval < 3 * model.a + 1.5 * PI * model.r + 2 * model.b; i++) {
-		p[i].x = -model.a - model.r * sin((i * interval - (3 * model.a + PI * model.r + 2 * model.b)) / model.r);
-		p[i].y = -model.b - model.r * cos((i * interval - (3 * model.a + PI * model.r + 2 * model.b)) / model.r);
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
+		p.x = -model.a - model.r * sin((i * interval - (3 * model.a + PI * model.r + 2 * model.b)) / model.r);
+		p.y = -model.b - model.r * cos((i * interval - (3 * model.a + PI * model.r + 2 * model.b)) / model.r);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 	for (; i * interval < 3 * model.a + 1.5 * PI * model.r + 4 * model.b; i++) {
-		p[i].x = -model.a - model.r;
-		p[i].y = -model.b + i * interval - 3 * model.a - 1.5 * PI * model.r - 2 * model.b;
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
+		p.x = -model.a - model.r;
+		p.y = -model.b + i * interval - 3 * model.a - 1.5 * PI * model.r - 2 * model.b;
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 	for (; i * interval < 3 * model.a + 2 * PI * model.r + 4 * model.b; i++) {
-		p[i].x = -model.a - model.r * cos((i * interval - (3 * model.a + 1.5 * PI * model.r + 4 * model.b)) / model.r);
-		p[i].y = model.b + model.r * sin((i * interval - (3 * model.a + 1.5 * PI * model.r + 4 * model.b)) / model.r);
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
+		p.x = -model.a - model.r * cos((i * interval - (3 * model.a + 1.5 * PI * model.r + 4 * model.b)) / model.r);
+		p.y = model.b + model.r * sin((i * interval - (3 * model.a + 1.5 * PI * model.r + 4 * model.b)) / model.r);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
-	for (; i * interval < 4 * model.a + 2 * PI * model.r + 4 * model.b; i++) {
-		p[i].x = i * interval - (4 * model.a + 2 * PI * model.r + 4 * model.b);
-		p[i].y = model.b + model.r;
-		p[i].z = 0;
-		p[i].d = 1;
-		pque->push_back(p[i]);
+	for (; i * interval < 4 * model.a + 2 * PI * model.r + 4 * model.b-tiny; i++) {
+		p.x = i * interval - (4 * model.a + 2 * PI * model.r + 4 * model.b);
+		p.y = model.b + model.r;
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 
-	int tst = i;
-
-	for (; i < 2 * tst; i++) {
-		p[i].x = p[i - tst].x;
-		p[i].y = p[i - tst].y;
-		p[i].z = model.length;
-		p[i].d = -1;
-		pque->push_back(p[i]);
-	}
-	//生成所有路径起点
-	CString STemp;
-	STemp.Format(_T("totalNum = %d"), 2 * tst);
-	AfxMessageBox(STemp);
-	return 2 * tst;
+	return pque->size();
 }
 
-void CMfcogl1Doc::OnGeneratePosition(struct position* p, std::deque<struct position>* pque) {
-	vector trackStart = { cos(-tmpAngle), sin(-tmpAngle),0 };
-	auto tmpPosition = pque->begin();
+void CMfcogl1Doc::OnGeneratePosition(std::deque<struct position>* pque) {
+
+	//vector trackStart = { cos(-tmpAngle), sin(-tmpAngle),0 };
 	float angle = -1;
 	float cross, localAngle;
+	int M0 = ceil((2 * PI * model.r + 4 * model.a + 4 * model.b) / (model.width / abs(cos(model.angle))));
+	auto tmpPosition = pque->begin();
+	int lastOut;
+	if (position.d == -1) {
+		lastOut = kList->front();
+	}
+	else {
+		lastOut = kList->back();
+	}
 	for (auto i = pque->begin(); i < pque->end(); i++) {//遍历 找到下一个合适的节点 
-		if (position.d != (*i).d) {
-			cross = trackStart.x * (*i).y - trackStart.y * (*i).x;
-			if (cross < 0) {
+		if (position.d != (*i).d && (*i).i == (lastOut+jumpNum)%M0) {
+			/*伴随角度的变换计算*   完全不用这样考虑 在钉外绕圈 可以从任意一个角度进去 即使是反向的角度，最多绕一圈而已/
+			/*cross = trackStart.x * (*i).y - trackStart.y * (*i).x;
+			if (cross > 0) {
 				localAngle = ((*i).x * trackStart.x + (*i).y * trackStart.y) / sqrt(pow((*i).x, 2) + pow((*i).y, 2));
 				if (localAngle > angle) { angle = localAngle; tmpPosition = i; }
-			}
+			}*/
+			/*最小距离计算*/
+			/*cross =position.x * (*i).y - position.y * (*i).x;
+			if (cross < 0) {
+				localAngle = ((*i).x * position.x + (*i).y * position.y) / sqrt(pow((*i).x, 2) + pow((*i).y, 2));
+				if (localAngle > angle) {
+					angle = localAngle;
+					tmpPosition = i;
+				}
+			}*/
+			/*MK 固定跳跃数(切点数)* /
+			/*
+			5等分 3切点 2跳跃数  1 3 5 2 4   1 +3X = 22 X =21/3=7
+			20等分 3 切点 7跳跃数 1 X X 2 X X 3 X X   1 8 15 2 9 16 3    
+			1+CUT*JUMP = DF+2  JUMP=(DF+1) / CUT 
+			CUT*JUMP = DF+1         3J=DF+1    */
+			tmpPosition = i;
+			break;
 		}
 	}
-	Track lastTrack;
+
+	/*Track lastTrack;
 	lastTrack.x = model.a + model.r ;
 	lastTrack.z = (*tmpPosition).d > 0 ? 0 : model.length;
 	lastTrack.spindleAngle = tmpAngle + acos(angle);
 	lastTrack.swingAngle = (*tmpPosition).d > 0 ? -PI / 2 : PI / 2;
 	tmpAngle += acos(angle);
-	TubeTrackListTime->push_back(lastTrack);
+	TubeTrackListTime->push_back(lastTrack);*/
+
 	position.x = (*tmpPosition).x;
 	position.y = (*tmpPosition).y;
 	position.z = (*tmpPosition).z;
 	position.d = (*tmpPosition).d;
+	if (position.d ==1) {
+		kList->push_front((*tmpPosition).i);
+	}
+	else {
+		kList->push_back((*tmpPosition).i);
+	}
 	pque->erase(tmpPosition);
-
 }
 
 void CMfcogl1Doc::OnRenderSinglePath() {
@@ -1408,3 +1492,5 @@ void CMfcogl1Doc::insertPoint(float *nextPoint ) {
 	nextPoint[2] += model.length / 2;
 
 }
+
+

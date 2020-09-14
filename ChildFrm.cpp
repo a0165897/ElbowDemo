@@ -44,14 +44,22 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 	if( !CMDIChildWnd::PreCreateWindow(cs) )
 		return FALSE;
-	cs.cx=600;
-	cs.cy=500;
+	cs.cx=1800;
+	cs.cy=2400;
 
 	return TRUE;
 }
 
-
-
+void CChildFrame::ActivateFrame(int CmdShow){
+if (GetMDIFrame()->MDIGetActive())
+{
+	CMDIChildWnd::ActivateFrame(CmdShow);
+}
+else
+{
+	CMDIChildWnd::ActivateFrame(SW_SHOWMAXIMIZED);
+}
+}
 /////////////////////////////////////////////////////////////////////////////
 // CChildFrame diagnostics
 

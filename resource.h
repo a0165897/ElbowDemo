@@ -67,6 +67,7 @@
 #define IDC_TUBE_WINDING_ANGLE2         1041
 #define IDC_TUBE_BAND_WIDTH             1041
 #define IDC_TUBE_LENGTH                 1042
+#define IDC_TUBE_CUT_NUM                1042
 #define IDM_ROTATE                      32771
 #define IDM_ROTATE_WITH_X               32772
 #define IDM_ROTATE_WITH_Y               32773
@@ -105,6 +106,9 @@
 #define ID_VIEW_DISPLAY_MANDREL         32826
 #define ID_VIEW_DISPLAY_PARAMETER       32828
 #define IDM_CREATE_NEW_TUBE_MANDREL     32838
+#define ID_Menu                         32839
+#define ID_Menu32840                    32840
+#define ID_32841                        32841
 
 // Next default values for new objects
 // 
@@ -112,7 +116,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        149
-#define _APS_NEXT_COMMAND_VALUE         32839
+#define _APS_NEXT_COMMAND_VALUE         32842
 #define _APS_NEXT_CONTROL_VALUE         1041
 #define _APS_NEXT_SYMED_VALUE           106
 #endif

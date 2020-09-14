@@ -26,7 +26,8 @@ struct model {
 };
 /*缠绕端点的位置*/
 struct position {
-	float x, y, z, d;//direction back or go
+	float x, y, z, d; //direction back or go
+	int i;
 };
 
 struct vector {
@@ -74,19 +75,25 @@ private:
 	CString lpOpenTrackFile;
 	float Offset,eyeWidth,eyeAccelerate,rollerWidth,payeye_offset;
 	short int track_layer;
-
+public:
 	/*added by LMK*/
 	int testStop = 1;
+	int jumpNum;
+	int cutNum;//切点数 意思是 第一条纱经过几个来回后到达相邻位置 应该和跳跃数相对 如 5等分 1 3 5 2 4 1 .... 切点数为3 跳跃数为2 在一个切分中无限循环 每次从出去点+cutNum再出发
 	model model;
 	position position;
 	float m_doc_tube_band_width;
 	float m_doc_tube_winding_angle;
+	int m_doc_tube_cut_num;
 	float windingPathStep;
-	float tmpAngle;
+	float tmpAngle,angleStep;
 	TubePoint tempTubePoint;
+	std::deque<int>* kList;
 	std::deque<struct TubePoint>* TubePointList;//缠绕接触点序列 
 	std::deque<struct Track>* TubeTrackListTime;//缠绕机器路径序列 等时
 	std::deque<struct TubePoint>* TubePointListTime;
+	std::deque<float>* distanceE;
+	int m_isShowing;//2 elbow or 1 tube
 
 public:
 	int quarter_elbow,circuit_step,total_cylinder,circuit_num;
@@ -102,9 +109,6 @@ public:
 	double m_sweep_radius,m_height;
 	double m_pipe_radius,m_span_angle;
 	float deviation;
-
-	/*added by LMK*/
-	int m_isShowing;//elbow or tube
 public:
 
 // Overrides
@@ -156,25 +160,25 @@ public:
 	virtual ~CMfcogl1Doc();
 
 	/*added by LMK*/
+	float tiny = 0.001;//消除周期性误差
 	void OnSwitchFiberPathControlDlg();
 	void OnSwitchComputeFiberPath();
-
 	afx_msg void OnRenderSinglePath();
 	afx_msg int OnRenderLinePart(int state);
 	afx_msg int OnRenderCurvePart(int state);
-	afx_msg void OnComputeTubePath();
-	afx_msg int OnGenerateTubeWindingOrder(struct position* p, std::deque<struct position>* pque);
-	afx_msg void OnGeneratePosition(struct position* p, std::deque<struct position>* pque);
 	void updatePosition(float* nextPoint);
 	void insertPoint(float* nextPoint);
 	int outTubeEdge();
+	afx_msg int OnGenerateTubeWindingOrder( std::deque<struct position>* pque);
+	afx_msg void OnGeneratePosition( std::deque<struct position>* pque);
 	std::deque<TubePoint>::iterator updateTubeTrackListTime(std::deque<TubePoint>::iterator tmpTrack);
+	afx_msg void OnComputeTubePayeye();
 	void OnComputeStartAngle();
 
 	template<typename T>
-	void debug_show(T x) {
+	static void debug_show(T x) {
 		CString strMsg;
-		if (typeid(x) == typeid(int)) {
+		if (typeid(x) == typeid(unsigned int)) {
 			strMsg.Format("Value:%d\n", x);
 		}
 		if (typeid(x) == typeid(float)) {

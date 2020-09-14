@@ -26,6 +26,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CChildFrame)
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual void ActivateFrame(int CmdShow);
 	//}}AFX_VIRTUAL
 
 // Implementation

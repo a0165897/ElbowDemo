@@ -58,10 +58,10 @@ BEGIN_MESSAGE_MAP(CMfcogl1View, CView)
 	ON_COMMAND(IDM_VIEW_DISABLE_MANDREL_DISPLAY, OnViewDisableMandrelDisplay)
 	ON_COMMAND(IDM_DRAW_FIBER_TAPE, OnPayeyeSimulation)
 	ON_COMMAND(IDM_DRAW_MANDREL, OnDrawMandrel)
-	ON_COMMAND(IDM_DISPLAY_WINDING_SEQUENCE, OnDisplayWindingSequence)
+	ON_COMMAND(IDM_DISPLAY_WINDING_SEQUENCE, OnDisplayWindingSequence)//设置动态路径
 	ON_COMMAND(IDM_RESET_DISPLAY_STEP_BY_STEP, OnResetDisplayProcessToStart)
 	ON_COMMAND(IDM_DISPLAY_NEXT_POINT, OnDisplayNextPointOfWindingProcess)
-	ON_COMMAND(IDM_AUTO_DISPLAY_WINDING_PROCESS, OnAutoDisplayNextPoint)
+	ON_COMMAND(IDM_AUTO_DISPLAY_WINDING_PROCESS, OnAutoDisplayNextPoint)//实时仿真路径
 	ON_COMMAND(IDM_ADJUST_DISPLAY_ELAPSE, OnAdjustDisplayElapse)
 	ON_COMMAND(ID_VIEW_DISPLAY_MANDREL, OnViewDisplayMandrel)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DISPLAY_MANDREL, OnUpdateViewDisplayMandrel)
@@ -152,23 +152,20 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 		MessageBox("Make the rendering context current failed");
 		//return 1;
 	}
-	
 	glClearDepth(1.0f);
-
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glDepthFunc(GL_LEQUAL); //without apparent effect
 	glEnable(GL_DEPTH_TEST);
 	/*changed by LMK*/
 	//It was a GL_POSITION setting,but didn't work.
-	GLfloat light0Pos[4] = { 0.05F, 0.05F, 0.05F, 0.0F };
+	GLfloat light0Pos[4] = { 0.3F, 0.3F, 0.3F, 0.0F };
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light0Pos);
 	//glLighti(GL_LIGHT0,GL_SPOT_CUTOFF,5);
 	//CreateMandrelDisplayList();
 	//CreateFiberPathList();
-
 	if(m_elbow_cnt==0)
-	{
+	{	
 		InitFrustum();
 		m_elbow_cnt++;
 	}
@@ -487,6 +484,7 @@ void CMfcogl1View::OnToggleViewingDirection()
 
 void CMfcogl1View::OnCreateNewElbowMandrel() 
 {
+
 	CMfcogl1Doc *pDoc;
 	pDoc=(CMfcogl1Doc*)GetDocument();
 	if((!pDoc->m_bSavePath&&pDoc->m_bCanDisplayFiber)||(!pDoc->m_bSavePayeye&&pDoc->m_bPayeyeComplete))
@@ -543,13 +541,13 @@ void CMfcogl1View::InitFrustum()
 	fFarPlane = fNearPlane+30*fMaxObjSize;
 	m_Z_translate=-5*m_fRadius;
     fovy=180/PI*2*atan(fMaxObjSize /2/abs(m_Z_translate)); 
- 
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//test
-	//fNearPlane=1.0F;
-	//fFarPlane=8000.0F;
-    //fovy=15.0F; //the bigger fovy is, the smaller the image is , fovy++, size--
+	//平截头裁剪面
+	fNearPlane=1.0F;
+	fFarPlane=10000.0F;
+    fovy=15.0F; //the bigger fovy is, the smaller the image is , fovy++, size--
 	gluPerspective(fovy, fAspect, fNearPlane, fFarPlane);
 	glMatrixMode(GL_MODELVIEW);
 	
@@ -1029,7 +1027,7 @@ int CMfcogl1View::DisplayPayeyeProcess()
 
 int CMfcogl1View::DisplaytheWindingProcess()
 {
-	if(pDoc->m_bCanDisplayFiber)
+	if(pDoc->m_bCanDisplayFiber && pDoc->m_isShowing==2)
 	{
  		GLdouble ra,rb; //default values //,span_angle
  		int i; 
@@ -1135,6 +1133,26 @@ int CMfcogl1View::DisplaytheWindingProcess()
 				}
 			}
 			glEnd();
+	}
+	else if (pDoc->m_bCanDisplayFiber && pDoc->m_isShowing == 1) {
+		int i,point_number = m_cview_pnt_num_displayed_to;
+		GLfloat matAmb[4] = { 0.8F, 0.5F, 0.3F, 1.00F };
+		GLfloat matDiff[4] = { 0.8F, 0.5F, 0.3F, 0.80F };
+		GLfloat matSpec[4] = { 0.30F, 0.30F, 0.30F, 0.30F };
+		GLfloat matShine = 60.00F;
+		glMaterialfv(GL_FRONT, GL_AMBIENT, matAmb);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiff);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
+		glMaterialf(GL_FRONT, GL_SHININESS, matShine);
+		glLineWidth(2);
+		glBegin(GL_LINE_STRIP);
+		auto iter = pDoc->TubePointList->begin();
+		for (i = 0; i < point_number; i++) {
+			float a[3] = { (*iter).x,(*iter).y,(*iter).z-pDoc->model.length/2 };
+			glVertex3fv(a);
+			iter++;
+		}
+		glEnd();
 	}
 	return  0;
 }
@@ -1254,6 +1272,9 @@ void CMfcogl1View::OnDrawFiberPath()
 	CMfcogl1Doc *pDoc;
 	pDoc=(CMfcogl1Doc*)GetDocument();
 	ASSERT(pDoc!=NULL);
+	if (pDoc->m_isShowing == 1) {
+		return;
+	}
 	if(pDoc->m_bCanDisplayFiber)
 	{
 		CreateFiberPathList();
@@ -1300,7 +1321,7 @@ void CMfcogl1View::OnPayeyeSimulation()
 void CMfcogl1View::OnDrawMandrel() 
 {
 }
-
+//设置动态路径
 void CMfcogl1View::OnDisplayWindingSequence() 
 {
 	if(!m_bCanDisplayPayeye)pDoc=GetDocument();
@@ -1333,7 +1354,7 @@ void CMfcogl1View::OnDisplayNextPointOfWindingProcess()
 
 	Invalidate(FALSE);
 }
-
+//实时仿真路径
 void CMfcogl1View::OnAutoDisplayNextPoint() 
 {
 	if(m_bCanDisplayPath||m_bCanDisplayPayeye)
@@ -1347,7 +1368,7 @@ void CMfcogl1View::OnAutoDisplayNextPoint()
 		m_auto_rotate=!m_cview_auto_draw_two_points;
 
 		elapse=m_cview_display_elapse;	
-		SetTimer(2,elapse,NULL);
+		SetTimer(2,elapse/100,NULL);
 	}
 }
 
@@ -1401,7 +1422,15 @@ void CMfcogl1View::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 }
 
 /*added by LMK*/
+//生成方管
 void CMfcogl1View::OnCreateNewTubeMandrel() {
+	//初始化数值
+	m_cview_display_winding_in_sequence = false;
+	m_bCanDisplayPath = false;
+	KillTimer(2);
+	if (glIsList(FIBER_PATH_LIST) == GL_TRUE)
+		glDeleteLists(FIBER_PATH_LIST, 1);
+
 	CMfcogl1Doc* pDoc = GetDocument();
 	pDoc->m_isShowing = 1;
 	CCreateNewTubeDlg new_tube_dlg;
@@ -1422,6 +1451,8 @@ void CMfcogl1View::CreateTubeDisplayList(){
 	GLfloat length_step = m_view_tube_length;
 	int i = 0, flagx = 1, flagy = 1, degree, angle_step = 10;
 	glNewList(MANDRELDISPLAYLIST, GL_COMPILE);
+
+	myDrawAxis();
 
 	//light and color setting.
 	GLfloat matDiff[4] = { 0.4F, 0.6F, 0.6F, 1.00F };
@@ -1449,3 +1480,25 @@ void CMfcogl1View::CreateTubeDisplayList(){
 	glEndList();
 }
 
+void CMfcogl1View::myDrawAxis() {
+	glLineWidth(1.0);
+	glEnable(GL_LINE_SMOOTH);
+	glBegin(GL_LINES);
+		GLfloat matDiff[4] = { 1.0F, 0.0F, 0.0F, 1.00F };
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
+		glVertex3f(0, 0, 0 - m_view_tube_length / 2);
+		glVertex3f(10000, 0,0 - m_view_tube_length / 2);
+		GLfloat matDiff2[4] = { 0.0F, 1.0F, 0.0F, 1.00F };
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff2);
+		glVertex3f(0, 0, 0 - m_view_tube_length / 2);
+		glVertex3f(0, 0,10000 - m_view_tube_length / 2);
+		GLfloat matDiff3[4] = { 0.0F, 0.0F, 1.0F, 1.00F };
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff3);
+		glVertex3f(0, 0, 0 - m_view_tube_length / 2);
+		glVertex3f(0, 10000, 0 - m_view_tube_length / 2);
+	glEnd();
+	glBegin(GL_LINE_STRIP);
+		
+	glEnd(); 
+	glDisable(GL_LINE_SMOOTH);
+}

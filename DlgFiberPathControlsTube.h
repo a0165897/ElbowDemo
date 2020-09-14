@@ -15,6 +15,7 @@ public:
 #endif
 	float m_dlg_tube_winding_angle;
 	float m_dlg_tube_band_width;
+	float m_dlg_tube_cut_num;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持

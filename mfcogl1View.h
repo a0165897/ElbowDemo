@@ -130,7 +130,7 @@ protected:
 
 	/*added by LMK*/
 	afx_msg void OnCreateNewTubeMandrel();
-
+	void CMfcogl1View::myDrawAxis();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
