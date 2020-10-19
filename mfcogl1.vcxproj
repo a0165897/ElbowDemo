@@ -43,11 +43,13 @@
     <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)\Includes;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
     <IntDir>.\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)\Includes;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -136,6 +138,7 @@
     <ClCompile Include="AutoDisplayElapse.cpp" />
     <ClCompile Include="cdlgsemiwndanglelaw.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
+    <ClCompile Include="CreateNewCylinderDlg.cpp" />
     <ClCompile Include="CreateNewElbowDlg.cpp" />
     <ClCompile Include="CreateNewTubeDlg.cpp" />
     <ClCompile Include="DlgFiberPathControls.cpp" />
@@ -164,6 +167,7 @@
     <ClInclude Include="AutoDisplayElapse.h" />
     <ClInclude Include="cdlgsemiwndanglelaw.h" />
     <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="CreateNewCylinderDlg.h" />
     <ClInclude Include="CreateNewElbowDlg.h" />
     <ClInclude Include="CreateNewTubeDlg.h" />
     <ClInclude Include="datatype.h" />

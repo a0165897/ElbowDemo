@@ -5,6 +5,7 @@
 #include "mfcogl1.h"
 #include "rotationspeeddlg.h"
 #include "CreateNewElbowDlg.h"
+#include "CreateNewCylinderDlg.h"
 #include "AutoDisplayElapse.h"
 #include "mfcogl1Doc.h"
 #include "mfcogl1View.h"
@@ -73,7 +74,7 @@ BEGIN_MESSAGE_MAP(CMfcogl1View, CView)
 
 	/*added by LMK*/
 	ON_COMMAND(IDM_CREATE_NEW_TUBE_MANDREL, OnCreateNewTubeMandrel)
-
+	ON_COMMAND(IDM_CREATE_NEW_CYLINDER_MANDREL, OnCreateNewCylinderMandrel)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -152,16 +153,18 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 		MessageBox("Make the rendering context current failed");
 		//return 1;
 	}
-	glClearDepth(1.0f);
+
+	glClearDepth(1.0F);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glDepthFunc(GL_LEQUAL); //without apparent effect
 	glEnable(GL_DEPTH_TEST);
 	/*changed by LMK*/
-	//It was a GL_POSITION setting,but didn't work.
-	GLfloat light0Pos[4] = { 0.3F, 0.3F, 0.3F, 0.0F };
+	GLfloat light0Pos[4] = { 0.3F, 0.3F, 0.3F,1.0F };
+	GLfloat light0Spec[4] = {1.0F, 1.0F, 1.0F,1.0F };
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light0Pos);
-	//glLighti(GL_LIGHT0,GL_SPOT_CUTOFF,5);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0Pos);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light0Spec);
 	//CreateMandrelDisplayList();
 	//CreateFiberPathList();
 	if(m_elbow_cnt==0)
@@ -178,10 +181,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 		m_elbow_updated=FALSE;
 	}
 
-//	glClearColor(0.0f,0.0f,0.0f,1.0f); //black
-//	glClearColor(0.5f,0.0f,0.80f,1.0f);
-	glClearColor(0.98f,0.98f,0.98f,1.0f);//white
-//	glClearDepth(100.0f);
+	glClearColor(1.0,1.0f,1.0f,1.0f);//white
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 	glPushMatrix();
@@ -207,7 +207,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 
 //    Draw mandrel through triangle strip
 //	glCallList(COMPOSITE_LIST);
-
+	//当允许显示芯模时
 	if(!m_cview_disable_mandrel_display&&m_bCanDisplayMandrel)
     {
 		glPushMatrix();
@@ -216,7 +216,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	}
 	//Material property of fiber for lighting
 ////////////////////////////////////////////////////////////////////////////
-//draw fiber
+//draw fiber 当直接显示纤维时 这个时候以display list方式输出
 	if(!m_cview_display_winding_in_sequence)	
 	{
 		if(!m_cview_enable_tape_display)
@@ -226,6 +226,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 			glPopMatrix();
 		}
 	}
+	//当要动态显示纤维路径时 以glbegin/glend输出
 	else
 	{
 		if(m_cview_pnt_num_displayed_to==m_cview_total_path_point_number||
@@ -239,22 +240,20 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 		}
 		else		
 		{
+			//进度条
 			if(m_payeye_to==m_cview_pnt_num_displayed_to)
 				scircuit=(float)m_payeye_to/(float)m_cview_total_path_point_number*100;
 			else scircuit=(float)m_cview_pnt_num_displayed_to/(float)m_cview_total_path_point_number*100;
 			astring.Format("%d%%",scircuit);
 			if(pFrame==NULL)pFrame=(CMainFrame*)AfxGetApp()->m_pMainWnd; //GetParentOwner();
 			pFrame->m_wndProgress.ShowWindow(SW_SHOW); //PostMessage(WM_TIMER);
-//			pFrame->m_wndProgress.GetClientRect(&arect);
-//			CClientDC tempDC(&pFrame->m_wndProgress);
-//			tempDC.DrawText(astring,&arect,DT_RIGHT);
 			pFrame->m_wndStatusBar.SetPaneText(2,astring);
 			pFrame->m_wndProgress.SetPos(scircuit);
 //			bDynamicFlag=FALSE;
 		}
-		if(m_bCanDisplayPath)DisplaytheWindingProcess();
+		if(m_bCanDisplayPath)DisplaytheWindingProcess();//动态的纤维路径
 		if(m_bCanDisplayPayeye)
-		{
+		{//动态的机器路径
 			glPushMatrix();
 			glRotatef(90,0.0,1.0,0.0);
 			glLineWidth(3.0f);
@@ -1027,7 +1026,7 @@ int CMfcogl1View::DisplayPayeyeProcess()
 
 int CMfcogl1View::DisplaytheWindingProcess()
 {
-	if(pDoc->m_bCanDisplayFiber && pDoc->m_isShowing==2)
+	if(pDoc->m_bCanDisplayFiber && pDoc->m_isShowing==2)//lhs
 	{
  		GLdouble ra,rb; //default values //,span_angle
  		int i; 
@@ -1148,7 +1147,7 @@ int CMfcogl1View::DisplaytheWindingProcess()
 		glBegin(GL_LINE_STRIP);
 		auto iter = pDoc->TubePointList->begin();
 		for (i = 0; i < point_number; i++) {
-			float a[3] = { (*iter).x,(*iter).y,(*iter).z-pDoc->model.length/2 };
+			float a[3] = { (*iter).x,(*iter).y,(*iter).z };
 			glVertex3fv(a);
 			iter++;
 		}
@@ -1324,7 +1323,7 @@ void CMfcogl1View::OnDrawMandrel()
 //设置动态路径
 void CMfcogl1View::OnDisplayWindingSequence() 
 {
-	if(!m_bCanDisplayPayeye)pDoc=GetDocument();
+	if(!m_bCanDisplayPayeye)pDoc=GetDocument(); 
 	if(pDoc->m_bCanDisplayFiber)
 	{
 		m_cview_display_winding_in_sequence=true;
@@ -1467,15 +1466,121 @@ void CMfcogl1View::CreateTubeDisplayList(){
 	glBegin(GL_TRIANGLE_STRIP);
 	for (degree = 0; degree <=360; degree += angle_step) {
 		if (degree % 90 == 0) {
-			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 - 0.5));
-			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 - 0.5));
+			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2));
+			glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2));
 		}
 		flagx = (degree >= 90 && degree < 270) ? -1 : 1;
 		flagy = (degree >= 180 && degree < 360) ? -1 : 1;
 		glNormal3f(cos(degree * PI / 180), sin(degree * PI / 180), 0.0f);
-		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 - 0.5));
-		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 - 0.5));
+		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2));
+		glVertex3f(flagx * m_view_tube_a + m_view_tube_r * cos(degree * PI / 180), flagy * m_view_tube_b + m_view_tube_r * sin(degree * PI / 180), length_step * (i++ % 2 ));
 	}
+	glEnd();
+	glEndList();
+}
+
+/*added by LMK*/
+//生成开口压力容器
+void CMfcogl1View::OnCreateNewCylinderMandrel() {
+	//初始化数值
+	m_cview_display_winding_in_sequence = false;
+	m_bCanDisplayPath = false;
+	KillTimer(2);
+	if (glIsList(FIBER_PATH_LIST) == GL_TRUE)
+		glDeleteLists(FIBER_PATH_LIST, 1);
+
+	CMfcogl1Doc* pDoc = GetDocument();
+	pDoc->m_isShowing = 3;
+	CCreateNewCylinderDlg new_cylinder_dlg;
+	int choice = new_cylinder_dlg.DoModal();
+	if (choice == IDOK) {
+		pDoc->ResetWndDesign();
+		m_view_cylinder_middle_length = new_cylinder_dlg.m_dlg_cylinder_middle_length;
+		m_view_cylinder_middle_radius = new_cylinder_dlg.m_dlg_cylinder_middle_radius;
+		m_view_cylinder_left_length = new_cylinder_dlg.m_dlg_cylinder_left_length;
+	    m_view_cylinder_left_radius = new_cylinder_dlg.m_dlg_cylinder_left_radius;
+		m_view_cylinder_right_length = new_cylinder_dlg.m_dlg_cylinder_right_length;
+		m_view_cylinder_right_radius = new_cylinder_dlg.m_dlg_cylinder_right_radius;
+	}
+	CreateCylinderDisplayList();
+	//to refresh screen
+	Invalidate(false);
+}
+void CMfcogl1View::CreateCylinderDisplayList() {
+	glNewList(MANDRELDISPLAYLIST, GL_COMPILE);
+
+	myDrawAxis();
+
+	//light and color setting.
+	GLfloat matDiff[4] = { 0.4F, 0.6F, 0.6F, 1.00F };
+	GLfloat matSpec[4] = { 0.1F, 0.1F, 0.1F, 1.00F };
+	GLfloat matShine = 5.00F;
+
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
+	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
+	//compute the mandrel.
+	glBegin(GL_TRIANGLE_STRIP);
+	float left = 0,step = 1,r_step=10;
+	for (; left < m_view_cylinder_left_length; left += step) {
+		for (float r = 0; r <= 360; r+=r_step) {
+			float x1 = left;
+			float gx1 = sqrt(pow(m_view_cylinder_middle_radius, 2) - (pow(m_view_cylinder_middle_radius, 2) - pow(m_view_cylinder_left_radius, 2)) * pow(x1- m_view_cylinder_left_length, 2) / pow(m_view_cylinder_left_length, 2));
+			float y1 = gx1 * sin(2 * PI * r / 360);
+			float z1 = gx1 * cos(2 * PI * r / 360);
+
+			float x2 = x1 + step;
+			float gx2 = sqrt(pow(m_view_cylinder_middle_radius, 2) - (pow(m_view_cylinder_middle_radius, 2) - pow(m_view_cylinder_left_radius, 2)) * pow(x2- m_view_cylinder_left_length, 2) / pow(m_view_cylinder_left_length, 2));
+			float y2 = gx2 * sin(2 * PI * r / 360);
+			float z2 = gx2 * cos(2 * PI * r / 360);
+
+			float nx = x1- m_view_cylinder_left_length, ny = y1, nz = z1;
+			float normalize = sqrt(nx * nx + ny * ny + nz * nz);
+			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
+			glVertex3f(x1, y1, z1);
+			nx = x2 - m_view_cylinder_left_length, ny = y2, nz = z2;
+			normalize = sqrt(nx * nx + ny * ny + nz * nz);
+			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
+			glVertex3f(x2, y2, z2);
+		}
+	}
+	float middle = m_view_cylinder_left_length; 
+	for (; middle < m_view_cylinder_left_length+ m_view_cylinder_middle_length; middle += step) {
+		for (float r = 0; r <= 360; r += r_step) {
+			float x = middle;
+			float y = m_view_cylinder_middle_radius * sin(2*PI * r / 360);
+			float z = m_view_cylinder_middle_radius * cos(2*PI * r / 360);
+			glNormal3f(0, sin(r * PI / 180), cos(r * PI / 180));
+			glVertex3f(x, y, z);
+			x += step;
+			glNormal3f(0, sin(r * PI / 180), cos(r * PI / 180));
+			glVertex3f(x, y, z);
+		}
+	}
+	float right = m_view_cylinder_left_length+m_view_cylinder_middle_length;
+	for (; right < m_view_cylinder_left_length+ m_view_cylinder_middle_length + m_view_cylinder_right_length; right += step) {
+		for (float r = 0; r <= 360; r += r_step) {
+			float x1 = right;
+			float gx1 = sqrt(pow(m_view_cylinder_middle_radius, 2) - (pow(m_view_cylinder_middle_radius, 2) - pow(m_view_cylinder_right_radius, 2)) * pow(x1- m_view_cylinder_left_length -m_view_cylinder_middle_length, 2) / pow(m_view_cylinder_right_length, 2));
+			float y1 = gx1 * sin(2 * PI * r / 360);
+			float z1 = gx1 * cos(2 * PI * r / 360);
+
+			float x2 = x1 + step;
+			float gx2 = sqrt(pow(m_view_cylinder_middle_radius, 2) - (pow(m_view_cylinder_middle_radius, 2) - pow(m_view_cylinder_right_radius, 2)) * pow(x2 - m_view_cylinder_left_length - m_view_cylinder_middle_length, 2) / pow(m_view_cylinder_right_length, 2));
+			float y2 = gx2 * sin(2 * PI * r / 360);
+			float z2 = gx2 * cos(2 * PI * r / 360);
+
+			float nx = x1 - m_view_cylinder_left_length- m_view_cylinder_middle_length, ny = y1, nz = z1;
+			float normalize = sqrt(nx * nx + ny * ny + nz * nz);
+			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
+			glVertex3f(x1, y1, z1);
+			nx = x2 - m_view_cylinder_left_length- m_view_cylinder_middle_length, ny = y2, nz = z2;
+			normalize = sqrt(nx * nx + ny * ny + nz * nz);
+			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
+			glVertex3f(x2, y2, z2);
+		}
+	}
+	
 	glEnd();
 	glEndList();
 }
@@ -1485,17 +1590,20 @@ void CMfcogl1View::myDrawAxis() {
 	glEnable(GL_LINE_SMOOTH);
 	glBegin(GL_LINES);
 		GLfloat matDiff[4] = { 1.0F, 0.0F, 0.0F, 1.00F };
+		glNormal3f(1,0, 0);
 		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
-		glVertex3f(0, 0, 0 - m_view_tube_length / 2);
-		glVertex3f(10000, 0,0 - m_view_tube_length / 2);
+		glVertex3f(0, 0, 0);
+		glVertex3f(10000, 0,0);
 		GLfloat matDiff2[4] = { 0.0F, 1.0F, 0.0F, 1.00F };
+		glNormal3f(0, 1, 0);
 		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff2);
-		glVertex3f(0, 0, 0 - m_view_tube_length / 2);
-		glVertex3f(0, 0,10000 - m_view_tube_length / 2);
+		glVertex3f(0, 0, 0 );
+		glVertex3f(0, 0,10000 );
 		GLfloat matDiff3[4] = { 0.0F, 0.0F, 1.0F, 1.00F };
+		glNormal3f(0, 0, 1);
 		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff3);
-		glVertex3f(0, 0, 0 - m_view_tube_length / 2);
-		glVertex3f(0, 10000, 0 - m_view_tube_length / 2);
+		glVertex3f(0, 0, 0 );
+		glVertex3f(0, 10000, 0);
 	glEnd();
 	glBegin(GL_LINE_STRIP);
 		

@@ -78,7 +78,7 @@ private:
 public:
 	/*added by LMK*/
 	int testStop = 1;
-	int jumpNum;
+	int jumpNum;//跳跃数 从对话框中算出
 	int cutNum;//切点数 意思是 第一条纱经过几个来回后到达相邻位置 应该和跳跃数相对 如 5等分 1 3 5 2 4 1 .... 切点数为3 跳跃数为2 在一个切分中无限循环 每次从出去点+cutNum再出发
 	model model;
 	position position;
@@ -93,7 +93,7 @@ public:
 	std::deque<struct Track>* TubeTrackListTime;//缠绕机器路径序列 等时
 	std::deque<struct TubePoint>* TubePointListTime;
 	std::deque<float>* distanceE;
-	int m_isShowing;//2 elbow or 1 tube
+	int m_isShowing;//1:tube(方直管) 2:elbow(圆弯管) 3:cylinder(开口压力容器)  
 
 public:
 	int quarter_elbow,circuit_step,total_cylinder,circuit_num;
@@ -181,10 +181,10 @@ public:
 		if (typeid(x) == typeid(unsigned int)) {
 			strMsg.Format("Value:%d\n", x);
 		}
-		if (typeid(x) == typeid(float)) {
+		else if (typeid(x) == typeid(float)) {
 			strMsg.Format("Value:%f\n", x);
 		}
-		if (typeid(x) == typeid(const char *)) {
+		else if (typeid(x) == typeid(const char *)) {
 			strMsg.Format("Value:%s\n", x);
 		}
 		else {

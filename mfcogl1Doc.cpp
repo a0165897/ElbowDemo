@@ -935,12 +935,20 @@ void CMfcogl1Doc::OnOpenFiberPathControlTubeParametersDlg() {
 	float interval = round / M0;
 	cutNum = m_doc_tube_cut_num;
 	int rem = (M0 + 1) % cutNum;//最小互素数 27  1 5 9 13 17 21 25 2   最小切点数7
-	if (rem == 0) {
-		jumpNum = (M0 + 1) / cutNum;
+	while (rem != 0) {
+		model.width -= 0.05;
+		real_width = model.width / abs(cos(model.angle));
+		M0 = ceil(round / real_width);
+		interval = round / M0;
+		rem = (M0 + 1) % cutNum;
 	}
-	else {
-		jumpNum = -1;
-	}
+	jumpNum = (M0 + 1) / cutNum;
+	//if (rem == 0) {
+	//	jumpNum = (M0 + 1) / cutNum;
+	//}
+	//else {
+	//	jumpNum = -1;
+	//}
 	CString STemp;
 	STemp.Format(_T("纱宽(修正) = %.3f mm\n等分数=%d\n缠绕角 = %.3f degree\n切点数=%d\n跳跃数=%d"), real_width, M0, fpTubeDlg.m_dlg_tube_winding_angle,cutNum,jumpNum);
 	AfxMessageBox(STemp);
@@ -982,7 +990,7 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 		TubePointListTime = new std::deque<struct TubePoint>;
 		kList = new std::deque<int>;
 		distanceE = new std::deque<float>;
-
+		//生成所有线路的起点
 		int totalNum = OnGenerateTubeWindingOrder( pque);
 		//generate GL list
 		glNewList(FIBER_PATH_LIST, GL_COMPILE); //FIBER_PATH_LIST     2
@@ -1007,8 +1015,8 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 		//OnComputeTubePayeye();
 		while (pque->size() != 0 && testStop) {
 			//TubePointList = new std::deque<struct TubePoint>;
-			OnGeneratePosition(pque);//
-			OnRenderSinglePath();
+			OnGeneratePosition(pque);//根据当前位置和跳跃数算出下一条线路的起点
+			OnRenderSinglePath();//计算本线路的所有顶点位置并输入glList
 			//OnComputeStartAngle();
 			//OnComputeTubePayeye();			//计算一条纤维带
 		}
@@ -1136,6 +1144,7 @@ int CMfcogl1Doc::OnGenerateTubeWindingOrder(std::deque<struct position>* pque) {
 	return pque->size();
 }
 
+//根据当前位置和跳跃数算出下一条线路的起点
 void CMfcogl1Doc::OnGeneratePosition(std::deque<struct position>* pque) {
 
 	//vector trackStart = { cos(-tmpAngle), sin(-tmpAngle),0 };
@@ -1239,10 +1248,12 @@ void CMfcogl1Doc::updatePosition(float* nextPoint) {
 	position.x = nextPoint[0];	position.y = nextPoint[1]; position.z = nextPoint[2];
 }
 
+//有没有超出两端
 int CMfcogl1Doc::outTubeEdge() {
 	return (position.z < 0) ? -1 : (position.z >= model.length ? 1 : 0);
 }
 
+//对一个倒角弧面上的线段计算路径，根据是否越界判断继续计算与否
 int CMfcogl1Doc::OnRenderCurvePart(int state) {
 	float startPoint[3] = { position.x,position.y,position.z };
 	float nextPoint[3] = { position.x,position.y,position.z };
@@ -1257,7 +1268,7 @@ int CMfcogl1Doc::OnRenderCurvePart(int state) {
 		startPoint[0] = model.a;
 		startPoint[1] = model.b;
 		glBegin(GL_LINE_STRIP);
-		//圆柱面上测地线
+		//圆柱面上测地线 对弧面的三条边约束
 		while (model.stepLength <= PI / 2 && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
 			//0:横向（2a）1:高（2b）2:纵向（C）angle:缠绕角 nextPoint:递推 m_view_r:倒角半径
 			nextPoint[0] = startPoint[0] + model.r * sin(model.stepLength);
@@ -1487,10 +1498,7 @@ int CMfcogl1Doc::OnRenderLinePart(int state) {
 }
 
 void CMfcogl1Doc::insertPoint(float *nextPoint ) {
-	nextPoint[2] -= model.length/2;
 	glVertex3fv(nextPoint);
-	nextPoint[2] += model.length / 2;
-
 }
 
 

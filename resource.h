@@ -22,15 +22,21 @@
 #define IDD_HINT_DIALOG                 144
 #define IDD_CREATE_NEW_TUBE             145
 #define IDD_FIBER_PATH_CONTROL_TUBE     147
+#define IDD_CREATE_NEW_CYLINDER         149
 #define IDC_SPAN_ANGLE                  1000
 #define IDC_SWEEP_RADIUS                1001
 #define IDC_PIPE_RADIUS                 1002
 #define IDC_EDIT1                       1003
+#define IDC_CYLINDER_MIDDLE_RADIUS      1003
 #define IDC_MAX_FRICTION                1004
+#define IDC_CYLINDER_LEFT_RADIUS        1004
 #define IDC_REFERENCE_WINDING_ANGLE     1005
+#define IDC_CYLINDER_LEFT_LENGTH        1005
 #define IDC_POSITION_ERROR_DIVISOR      1006
 #define IDC_INITIAL_OFFSET              1006
+#define IDC_CYLINDER_RIGHT_RADIUS       1006
 #define IDC_FIBER_BAND_WIDTH            1007
+#define IDC_CYLINDER_RIGHT_LENGTH       1007
 #define IDC_GEO_MAX_PHI_INC             1008
 #define IDC_SEMIGEO_MAX_PHI_INC         1009
 #define IDC_SEMIGEO_SPAN_ANGLE_INC_RATIO 1010
@@ -66,6 +72,7 @@
 #define IDC_TUBE_RADIUS                 1041
 #define IDC_TUBE_WINDING_ANGLE2         1041
 #define IDC_TUBE_BAND_WIDTH             1041
+#define IDC_CYLINDER_MIDDLE_LENGTH      1041
 #define IDC_TUBE_LENGTH                 1042
 #define IDC_TUBE_CUT_NUM                1042
 #define IDM_ROTATE                      32771
@@ -109,15 +116,16 @@
 #define ID_Menu                         32839
 #define ID_Menu32840                    32840
 #define ID_32841                        32841
+#define IDM_CREATE_NEW_CYLINDER_MANDREL 32842
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        149
-#define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         1041
+#define _APS_NEXT_RESOURCE_VALUE        151
+#define _APS_NEXT_COMMAND_VALUE         32843
+#define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

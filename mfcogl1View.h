@@ -77,6 +77,7 @@ public:
 
 	/*added by LMK*/
 	void CMfcogl1View::CreateTubeDisplayList();
+	void CMfcogl1View::CreateCylinderDisplayList();
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -130,6 +131,7 @@ protected:
 
 	/*added by LMK*/
 	afx_msg void OnCreateNewTubeMandrel();
+	afx_msg void OnCreateNewCylinderMandrel();
 	void CMfcogl1View::myDrawAxis();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
@@ -171,9 +173,15 @@ public:
 	//dialog(IDC_TUBE_WIDTH/2 - RADIUS)->Class CreateNewTubeDlg(m_dlg_tube_a)->view(m_view_tube_a)
 	GLfloat m_view_tube_a;
 	GLfloat m_view_tube_b;
-	GLfloat m_view_tube_length;
+	GLfloat m_view_tube_length =0;
 	GLfloat m_view_tube_r;
 
+	GLfloat m_view_cylinder_middle_length;
+	GLfloat m_view_cylinder_middle_radius;
+	GLfloat m_view_cylinder_left_length;
+	GLfloat m_view_cylinder_left_radius;
+	GLfloat m_view_cylinder_right_length;
+	GLfloat m_view_cylinder_right_radius;
 };
 
 #ifndef _DEBUG  // debug version in mfcogl1View.cpp
