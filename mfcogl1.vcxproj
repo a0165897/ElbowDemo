@@ -136,10 +136,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AutoDisplayElapse.cpp" />
-    <ClCompile Include="cdlgsemiwndanglelaw.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="CreateNewCylinderDlg.cpp" />
-    <ClCompile Include="CreateNewElbowDlg.cpp" />
     <ClCompile Include="CreateNewTubeDlg.cpp" />
     <ClCompile Include="DlgFiberPathControls.cpp" />
     <ClCompile Include="DlgFiberPathControlsTube.cpp" />
@@ -148,8 +146,6 @@
     <ClCompile Include="mfcogl1.cpp" />
     <ClCompile Include="mfcogl1Doc.cpp" />
     <ClCompile Include="mfcogl1View.cpp" />
-    <ClCompile Include="PressDialog.cpp" />
-    <ClCompile Include="publicfun.cpp" />
     <ClCompile Include="RotationSpeedDlg.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -165,10 +161,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoDisplayElapse.h" />
-    <ClInclude Include="cdlgsemiwndanglelaw.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="CreateNewCylinderDlg.h" />
-    <ClInclude Include="CreateNewElbowDlg.h" />
     <ClInclude Include="CreateNewTubeDlg.h" />
     <ClInclude Include="datatype.h" />
     <ClInclude Include="DlgFiberPathControls.h" />
@@ -178,9 +172,6 @@
     <ClInclude Include="mfcogl1.h" />
     <ClInclude Include="mfcogl1Doc.h" />
     <ClInclude Include="mfcogl1View.h" />
-    <ClInclude Include="pay.h" />
-    <ClInclude Include="PressDialog.h" />
-    <ClInclude Include="publicfun.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RotationSpeedDlg.h" />
     <ClInclude Include="StdAfx.h" />

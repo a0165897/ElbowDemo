@@ -1,20 +1,14 @@
 // mfcogl1View.h : interface of the CMfcogl1View class
-//
-/////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_MFCOGL1VIEW_H__27D94B34_DAC8_11D2_A30C_0000E83E71C7__INCLUDED_)
-#define AFX_MFCOGL1VIEW_H__27D94B34_DAC8_11D2_A30C_0000E83E71C7__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 #define PE  pDoc->pPath
 #define PT pDoc->ptrack
-
-#define MANDRELDISPLAYLIST  1
-#define FIBER_PATH_LIST     2
-#define FIBER_TAPE_LIST     3
-#define COMPOSITE_LIST      4
+#define MANDREL_DISPLAY_LIST	1//芯模
+#define FIBER_PATH_LIST					2//纤维束
+#define FIBER_TRACK_LIST				3//机器路径
+#define COMPOSITE_LIST					4//不知道是啥
+#define GLOBAL_LIST							5 //坐标轴
 #include "mfcogl1Doc.h" 
 #include "MainFrm.h"
 
@@ -52,9 +46,6 @@ public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	protected:
-	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
@@ -62,15 +53,9 @@ public:
 public:
 	bool m_cview_disable_mandrel_display;
 	bool m_cview_enable_tape_display;
-	void ReadFiberPathDataFromDisk(char *pFileName);
-	int	 ReadDataFromDLL(char *pFileName);
-	int  SetDataInDLL(char *pFileName);
 
-	int CreateFiberPathList();
 	int DisplayPayeyeProcess();
 	int DisplaytheWindingProcess();
-
-	void CreateMandrelDisplayList();
 	void InitFrustum();
 	GLfloat m_view_span_angle;
 	virtual ~CMfcogl1View();
@@ -99,7 +84,6 @@ protected:
 	afx_msg void OnTranslateY();
 	afx_msg void OnTranslateZ();
 	afx_msg void OnToggleViewingDirection();
-	afx_msg void OnCreateNewElbowMandrel();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnFillPolygonMode();
 	afx_msg void OnLinePolygonMode();
@@ -119,8 +103,6 @@ protected:
 	afx_msg void OnDisplayAll();
 	afx_msg void OnViewDisableMandrelDisplay();
 	afx_msg void OnPayeyeSimulation();
-	afx_msg void OnComputeDisplayData();
-	afx_msg void OnDrawMandrel();
 	afx_msg void OnDisplayWindingSequence();
 	afx_msg void OnResetDisplayProcessToStart();
 	afx_msg void OnDisplayNextPointOfWindingProcess();
@@ -132,7 +114,7 @@ protected:
 	/*added by LMK*/
 	afx_msg void OnCreateNewTubeMandrel();
 	afx_msg void OnCreateNewCylinderMandrel();
-	void CMfcogl1View::myDrawAxis();
+	void CMfcogl1View::DrawAxis();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
@@ -149,7 +131,7 @@ private:
 	CPoint m_mouse_down_point;
 	BOOL m_elbow_updated;
 	BOOL m_polygon_line_mode;
-	BOOL m_auto_rotate;
+	BOOL m_auto_rotate = FALSE;
 	bool m_cview_auto_draw_two_points;
 	float m_view_cylinder_height;
 	GLfloat m_fRadius;
@@ -163,6 +145,7 @@ private:
 	GLfloat m_Zangle;
 	GLfloat m_auto_rotate_angle;
 	GLfloat m_angle_increment;
+
 	
 	GLfloat m_X_translate;
 	GLfloat m_Y_translate;
@@ -189,9 +172,4 @@ inline CMfcogl1Doc* CMfcogl1View::GetDocument()
    { return (CMfcogl1Doc*)m_pDocument; }
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_MFCOGL1VIEW_H__27D94B34_DAC8_11D2_A30C_0000E83E71C7__INCLUDED_)

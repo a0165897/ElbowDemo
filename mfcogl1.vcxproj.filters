@@ -18,13 +18,7 @@
     <ClCompile Include="AutoDisplayElapse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cdlgsemiwndanglelaw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ChildFrm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CreateNewElbowDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DlgFiberPathControls.cpp">
@@ -43,12 +37,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mfcogl1View.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PressDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="publicfun.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RotationSpeedDlg.cpp">
@@ -82,13 +70,7 @@
     <ClInclude Include="AutoDisplayElapse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cdlgsemiwndanglelaw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ChildFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CreateNewElbowDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="datatype.h">
@@ -110,15 +92,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mfcogl1View.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pay.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PressDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="publicfun.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">

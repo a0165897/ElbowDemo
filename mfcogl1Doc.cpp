@@ -1,14 +1,10 @@
 // mfcogl1Doc.cpp : implementation of the CMfcogl1Doc class
 //
-
+#include <process.h>
 #include "stdafx.h"
 #include "mfcogl1.h"
-#include "publicfun.h"
-#include <process.h>
 #include "mfcogl1Doc.h"
 #include "DlgFiberPathControls.h"
-//#include "cdlgsemiwndanglelaw.h"
-#include "PressDialog.h"
 #include "mfcogl1View.h"
 
 /*added by LMK*/
@@ -31,12 +27,10 @@ IMPLEMENT_DYNCREATE(CMfcogl1Doc, CDocument)
 BEGIN_MESSAGE_MAP(CMfcogl1Doc, CDocument)
 	//{{AFX_MSG_MAP(CMfcogl1Doc)
 	ON_COMMAND(IDM_FIBER_PATH_CONTROL_PARAMETERS, OnSwitchFiberPathControlDlg)
-	ON_COMMAND(IDM_COMPUTE_FIBER_PATH, OnSwitchComputeFiberPath)
-	ON_COMMAND(IDM_DESIGN_ALGEBRA_PATTERN, OnComputePayeye)
-	ON_COMMAND(ID_PRESSURE_TEST, OnPressureTest)
+	ON_COMMAND(IDM_COMPUTE_FIBER_PATH, OnSwitchComputeFiberPath)//纤维路径 选择用那个算法
+	ON_COMMAND(IDM_DESIGN_ALGEBRA_PATTERN, OnComputePayeye)//弯管 机器路径
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
-	ON_COMMAND(ID_VIEW_DISPLAY_PARAMETER, OnViewDisplayParameter)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -80,8 +74,6 @@ CMfcogl1Doc::CMfcogl1Doc()
 	m_bSavePath=m_bSavePayeye=m_bPressTest=FALSE;
 	data_format=TRUE;
 	lpOpenPathFile=lpOpenTrackFile=" ";
-
-
 }
 
 CMfcogl1Doc::~CMfcogl1Doc()
@@ -108,64 +100,8 @@ CMfcogl1Doc::~CMfcogl1Doc()
 	}
 }
 
-BOOL CMfcogl1Doc::OnNewDocument()
-{
-	if (!CDocument::OnNewDocument())
-		return FALSE;
 
-	// TODO: add reinitialization code here
-	// (SDI documents will reuse this document)
-
-	return TRUE;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CMfcogl1Doc serialization
-
-void CMfcogl1Doc::Serialize(CArchive& ar)
-{
-	if (ar.IsStoring())
-	{
-		// TODO: add storing code here
-	}
-	else
-	{
-		// TODO: add loading code here
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CMfcogl1Doc diagnostics
-
-#ifdef _DEBUG
-void CMfcogl1Doc::AssertValid() const
-{
-	CDocument::AssertValid();
-}
-
-void CMfcogl1Doc::Dump(CDumpContext& dc) const
-{
-	CDocument::Dump(dc);
-}
-#endif //_DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
-// CMfcogl1Doc commands
-//修改芯模参数
-void CMfcogl1Doc::ModifyMandrelParameters(float a, float b, float span_angle,float height)
-{
-   if(fabs(height-15.0)<tolerance)
-   {
-	   m_pipe_radius=15.0;
-	   m_sweep_radius=45.0;
-	   m_height=height;
-	   m_span_angle=span_angle*PI/180;
-   }
-}
-
-//打开输入纤维轨迹控制参数对话框，完成数据更新
+//打开弯管的输入纤维轨迹控制参数对话框，完成数据更新
 void CMfcogl1Doc::OnOpenFiberPathControlParametersDlg() 
 {
 	if((!m_bSavePath&&m_bCanDisplayFiber)||(!m_bSavePayeye&&m_bPayeyeComplete))
@@ -175,7 +111,7 @@ void CMfcogl1Doc::OnOpenFiberPathControlParametersDlg()
 	}
 	InitialAngle();
 	CDlgFiberPathControls fpDlg;
-	fpDlg.m_reference_winding_angle=m_IniWndAngle*180/PI;
+	fpDlg.m_reference_winding_angle=m_IniWndAngle*180.0/PI;
 	if(IDOK==fpDlg.DoModal())
 	{
 		ResetWndDesign();
@@ -204,7 +140,7 @@ void CMfcogl1Doc::OnOpenFiberPathControlParametersDlg()
 }
 
 
-
+//弯管
 void CMfcogl1Doc::OnComputeFiberPath() 
 {
 	if(m_bCanDisplayFiber)
@@ -302,17 +238,7 @@ bool CMfcogl1Doc::IsEachPrime(int m1, int m2)
 	}
 	return (r==1)?true:false;
 }
-bool CMfcogl1Doc::Turn(int m,int step,float b,float alpha2, float frictbound,int &g,
-					   float &y1,float &frict)
-{
-	return TRUE;
-}
 
-void CMfcogl1Doc::Transition(int m,int adjust,int phi,float b,float yadjust,float alpha,
-							 float phitorus[],float alphatorus[],int flagad[][size],
-							 float phiad[][size],float yad[][size],float alphaad[][size])
-{
-}
 
 void CMfcogl1Doc::InitialAngle()
 { 
@@ -321,50 +247,7 @@ void CMfcogl1Doc::InitialAngle()
 	  m_IniWndAngle=acos(c1)+0.12;
 }
 
-int CMfcogl1Doc::CalculateSplittingNum(float b,float &thetacycle,int countlayer,float thick)
-{
-	return countlayer;
-
-}
-
-void CMfcogl1Doc::Lattice(int m,int step,float thetacycle,float spanangle)
-{
-}
-
-int CMfcogl1Doc::FillInPath(int m,int step,int total,int circuitnum,int large,int ismall,int mid,int g,
-	  int nocycle,float phi[],float alpha[],int flagad[][size],float phiad[][size],float yad[][size],
-	  float alphaad[][size],float phiturn[],float yturn[],float alphaturn[])
-{
-	return large;
-
-}
-
-float CMfcogl1Doc::Simpson(float start, float end, int step)
-{
-	return start;
-}
-
-float CMfcogl1Doc::ComplexSimpson(float start, float end, float tolerant_error)
-{
-	return start;
-
-}
-
-float CMfcogl1Doc::IntegralFun(float b, float x)
-{
-	return x;
-}
-
-void CMfcogl1Doc::PhiPartition(int m, int step, float phi[], float alpha[], float thetacycle, float tolerant_error)
-{
-
-}
-
-void CMfcogl1Doc::SolvePhiOffset(int m, int step, float phi[], float phi_offset[], float alpha_offset[], 
-		float span_angle, float thetacycle, float tolerant_error, int &ismall)
-{
-}
-
+//应该是重置下参数之类的
 void CMfcogl1Doc::ResetWndDesign()
 {
 	if(pPath!=NULL)
@@ -385,136 +268,6 @@ void CMfcogl1Doc::ResetWndDesign()
 	m_bSavePath=m_bSavePayeye=FALSE;
 	lpOpenPathFile=lpOpenTrackFile=" ";
 
-}
-
-void CMfcogl1Doc::OnPressureTest() 
-{
-	if(m_bPressTest)
-	{
-		AfxMessageBox(_T("Finite element analysis has been completed !"));
-		return;
-	}
-	if(m_bCanDisplayFiber)
-	{
-		float dphi,dz,dtheta,phi,theta,AveThick,*thick_elbow,ra,rb,h;
-		unsigned short index,total,num,slong,slati,countf,countb,i,number;
-		unsigned short slatitude,slong_cylinder=10,slong_elbow;
-		CWaitCursor wait;
-/*		CPressDialog pdlg;
-		if(pdlg.DoModal()==IDOK)
-		{
-			slatitude=pdlg.m_latitude;
-			slong_cylinder=pdlg.m_long_cylinder;
-			slong_elbow=pdlg.m_long_elbow;
-		}
-*/		slatitude=(WORD)2.0*PI/pPath[step].phi+1;
-		slong_elbow=2*(m*nocycle+large);
-		dphi=2.0*PI/slatitude;
-		dz=m_height/slong_cylinder;
-		dtheta=m_span_angle/slong_elbow;
-		total=slong_elbow+2*slong_cylinder;
-		number=slatitude*total;
-		ra=m_sweep_radius;
-		rb=m_pipe_radius;
-		h=m_FilamentThickness;
-		pPress=new Pressure[number*m_numlayer];
-		if(pPress==NULL)
-		{
-			AfxMessageBox(_T("Memory allocate failed,please close other program \
-and try again !"));
-			return;
-		}
-		thick_elbow=new float[slatitude];
-		if(thick_elbow==NULL)
-		{
-			AfxMessageBox(_T("Memory allocate failed,please close other program \
-and try again !"));
-			return;
-		}
-		phi=0.0;
-		for(i=0;i<slatitude;i++)
-		{
-			thick_elbow[i]=2.0*h*rb*(ra+rb)*dphi/(ra*rb*dphi+rb*rb*(sin(phi+dphi)-sin(phi)));
-			phi+=dphi;
-		}
-		AveThick=h*m*m_FilamentWidth/cos(m_IniWndAngle)/(PI*rb);
-		for(num=0;num<m_numlayer;num++)
-		{
-			index=num*number;
-			theta=m_height;
-			for(slong=0;slong<total;slong++)
-			{
-				phi=0.0;
-				for(slati=0;slati<slatitude;slati++)
-				{
-					pPress[index+slati].alpha_f=pPress[index+slati].alpha_b=0.0;
-					countf=countb=0;
-					i=(num>0)?m_WindingCount[num-1]:0;
-					for(;i<=m_WindingCount[num];i++)
-					{
-						if(slong<slong_cylinder||slong>=(slong_cylinder+slong_elbow))
-						{
-							if(pPath[i].flag!=0)
-								if(pPath[i].phi>=phi&&pPath[i].phi<(phi+dphi)
-									&&(pPath[i].flag*pPath[i].theta)<=theta
-									&&(pPath[i].flag*pPath[i].theta)>(theta-dz))
-								{
-									if(pPath[i].alpha<=PI/2.0)
-									{
-										pPress[index+slati].alpha_f+=pPath[i].alpha;
-										countf++;
-									}
-									else 
-									{
-										pPress[index+slati].alpha_b+=pPath[i].alpha;
-										countb++;
-									}
-								}
-						}
-						else
-						{
-							if(pPath[i].flag==0)
-								if(pPath[i].phi>=phi&&pPath[i].phi<(phi+dphi)
-									&&pPath[i].theta<=theta&&pPath[i].theta>(theta-dtheta))
-								{
-									if(pPath[i].alpha<=PI/2.0)
-									{
-										pPress[index+slati].alpha_f+=pPath[i].alpha;
-										countf++;
-									}
-									else 
-									{
-										pPress[index+slati].alpha_b+=pPath[i].alpha;
-										countb++;
-									}
-								}
-						}
-					}
-					if(slong<slong_cylinder||slong>=(slong_cylinder+slong_elbow))
-						pPress[index+slati].thickness_ave=AveThick;
-					else pPress[index+slati].thickness_ave=thick_elbow[slati];
-					if(countf)pPress[index+slati].alpha_f/=countf;
-					if(countb)pPress[index+slati].alpha_b/=countb;
-					phi+=dphi;
-				}
-				index+=slatitude;
-				if(slong<(slong_cylinder-1)||slong>=(slong_elbow+slong_cylinder))theta-=dz;
-				if(slong==(slong_cylinder-1))theta=m_span_angle/2.0;
-				if(slong<(slong_cylinder+slong_elbow-1)&&slong>=slong_cylinder)theta-=dtheta;
-				if(slong==(slong_cylinder+slong_elbow-1))theta=0.0;
-			}
-		}
-		if(thick_elbow!=NULL)
-		{
-			delete []thick_elbow;
-			thick_elbow=NULL;
-		}
-		WriteTestData(slatitude,slong_elbow,slong_cylinder);
-		m_bPressTest=true;
-	}
-	else AfxMessageBox(_T("Please design fiber path first !"));
-	// TODO: Add your command handler code here
-	
 }
 
 void CMfcogl1Doc::WriteTestData(unsigned short latitude, unsigned short long_elbow, unsigned short long_cylinder)
@@ -561,11 +314,6 @@ void CMfcogl1Doc::WriteTestData(unsigned short latitude, unsigned short long_elb
 	delete []pPress;
 	pPress=NULL;
 	return;
-}
-
-float CMfcogl1Doc::DetermineStep(int m, float thetacycle, float tolerant_error)
-{
-	return thetacycle;
 }
 
 void CMfcogl1Doc::SaveDataToDisk(LPCTSTR lpszFilter)
@@ -853,49 +601,6 @@ void CMfcogl1Doc::OnFileOpen()
 	
 }
 
-void CMfcogl1Doc::OnViewDisplayParameter() 
-{
-	CString InfString;
-	InfString.Format("The torus radius  a=%fcm,\npipe radius b=%fcm,\nlength of cylinder h=%fcm;\
-\nspan angle is %f(Degree),\nInitial winding angle is %f(Degree),\nfiber width is %fcm;\n\
-fiber thickness is %fcm,\nmaximun friction is %f.",m_sweep_radius,m_pipe_radius,m_height,m_span_angle*180/PI,\
-m_IniWndAngle*180/PI,m_FilamentWidth,m_FilamentThickness,m_friction);
-	AfxMessageBox(InfString);
-	// TODO: Add your command handler code here
-	
-}
-// Source code for payout eye trajectory
-void CMfcogl1Doc::posite (struct Mandrel mand,struct PathPoint path)
-{
-}
-
-float CMfcogl1Doc::falpha(float alpha,float xcarriage,float zcarriage,
-			 float highPayeye,struct Site *psite)
-{
-	return alpha;
-}
-
-float CMfcogl1Doc::findspindleangle(float alpha,float xcarriage,float zcarriage,
-				float highPayeye,float step,struct Site *psite)
-{
-	return alpha;
-
-}
-
-float CMfcogl1Doc::calxcarriage(float& alpha0,float alpha,float dswing,float ycylinderi,
-					float ycylinder,float slip,int& index,int frontback,int flag,int flag2,
-					int n,struct Mandrel mand,struct Miscellence misc)
-{
-	return alpha;
-
-}
-
-void CMfcogl1Doc::CalculateTrack(struct Mandrel mand,struct Miscellence misc,
-				float epsilon,struct PathPoint *path,int countPathPoint)
-{
-	return;     //ptrack;
-}
-
 /*added by LMK*/
 //Since now we have two mandrels(elbow,tube),choose right dialog to get parameters.
 void CMfcogl1Doc::OnSwitchFiberPathControlDlg() {
@@ -1003,7 +708,6 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiff);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
 		glMaterialf(GL_FRONT, GL_SHININESS, matShine);
-		glLineWidth(2);
 
 		position.d = pque->front().d;
 		position.x = pque->front().x;
@@ -1186,14 +890,6 @@ void CMfcogl1Doc::OnGeneratePosition(std::deque<struct position>* pque) {
 			break;
 		}
 	}
-
-	/*Track lastTrack;
-	lastTrack.x = model.a + model.r ;
-	lastTrack.z = (*tmpPosition).d > 0 ? 0 : model.length;
-	lastTrack.spindleAngle = tmpAngle + acos(angle);
-	lastTrack.swingAngle = (*tmpPosition).d > 0 ? -PI / 2 : PI / 2;
-	tmpAngle += acos(angle);
-	TubeTrackListTime->push_back(lastTrack);*/
 
 	position.x = (*tmpPosition).x;
 	position.y = (*tmpPosition).y;
