@@ -44,8 +44,8 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 	if( !CMDIChildWnd::PreCreateWindow(cs) )
 		return FALSE;
-	cs.cx=1800;
-	cs.cy=2400;
+	cs.cx=1200;
+	cs.cy=900;
 
 	return TRUE;
 }

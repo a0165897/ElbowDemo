@@ -23,6 +23,7 @@
 #define IDD_CREATE_NEW_TUBE             145
 #define IDD_FIBER_PATH_CONTROL_TUBE     147
 #define IDD_CREATE_NEW_CYLINDER         149
+#define IDR_RIBBON1                     153
 #define IDC_SPAN_ANGLE                  1000
 #define IDC_SWEEP_RADIUS                1001
 #define IDC_PIPE_RADIUS                 1002
@@ -75,6 +76,11 @@
 #define IDC_CYLINDER_MIDDLE_LENGTH      1041
 #define IDC_TUBE_LENGTH                 1042
 #define IDC_TUBE_CUT_NUM                1042
+#define IDC_TUBE_BAND_THICKNESS         1043
+#define IDC_TUBE_MANDREL_SPEED          1044
+#define IDC_TUBE_MANDREL_PAYEYE_DISTANCE 1045
+#define IDC_TUBE_MANDREL_PAYEYE_LEFT_DISTANCE 1046
+#define IDC_TUBE_MANDREL_REDUNDANCY     1047
 #define IDM_ROTATE                      32771
 #define IDM_ROTATE_WITH_X               32772
 #define IDM_ROTATE_WITH_Y               32773
@@ -117,14 +123,17 @@
 #define ID_Menu32840                    32840
 #define ID_32841                        32841
 #define IDM_CREATE_NEW_CYLINDER_MANDREL 32842
+#define ID_BUTTON2                      32843
+#define IDM_COMPUTE_PAYEYE_TRACK        32844
+#define IDM_DISPLAY_FIBER_TAPE          32845
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        151
-#define _APS_NEXT_COMMAND_VALUE         32843
+#define _APS_NEXT_RESOURCE_VALUE        154
+#define _APS_NEXT_COMMAND_VALUE         32846
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           106
 #endif

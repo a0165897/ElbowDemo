@@ -66,11 +66,6 @@ struct Site
 	float tx, ty, tz;
 	float nx, ny, nz;
 };
-struct Track
-{
-	float x, z;
-	float swingAngle, spindleAngle;
-};
 struct Mandrel
 {
 	float a, b, spanAngle;
