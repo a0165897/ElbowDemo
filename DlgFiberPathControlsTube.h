@@ -15,14 +15,7 @@ public:
 #endif
 	float m_dlg_tube_winding_angle;
 	float m_dlg_tube_band_width;
-	float m_dlg_tube_band_thickness;
 	float m_dlg_tube_cut_num;
-
-	float m_dlg_tube_mandrel_speed;//芯模转速
-	float m_dlg_tube_pm_distance;//吐丝嘴距芯模最内缘距离
-	float m_dlg_tube_pm_left_distance;//吐丝嘴距芯模左侧距离
-	float m_dlg_tube_mandrel_redundancy;//芯模左右侧冗余
-
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持

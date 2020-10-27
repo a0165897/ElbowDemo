@@ -8,6 +8,8 @@
 #include "mfcogl1Doc.h"
 #include "WaglView1.h"
 //Code of multivew for indentical document, added on Sept. 22, 1999
+
+
 #include "MainFrm.h"
 #include "mfcogl1View.h"
 
@@ -73,13 +75,25 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("Failed to create status bar\n");
 		return -1;      // fail to create
 	}
-	RECT arect = { 0,0,0,0 };
-	m_wndProgress.Create(WS_CHILD|PBS_SMOOTH, arect, &m_wndStatusBar, ID_CIRCUIT_PROGRESS);
-	m_wndStatusBar.SetPaneInfo(1, ID_CIRCUIT_PROGRESS, SBPS_NOBORDERS, 100);
-	m_wndProgress.ShowWindow(SW_HIDE);
-	m_wndProgress.SetRange(0, 100);
+
+	// TODO: Delete these three lines if you don't want the toolbar to
+	//  be dockable
+	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
+	EnableDocking(CBRS_ALIGN_ANY);
+	DockControlBar(&m_wndToolBar);
+	m_wndStatusBar.SetPaneStyle(1,SBPS_NOBORDERS);
+	m_wndStatusBar.SetPaneStyle(2,SBPS_NOBORDERS);
+
+	RECT arect={0,0,0,0};
+	if (!m_wndProgress.Create(WS_CHILD|PBS_SMOOTH,arect,
+		&m_wndStatusBar,ID_CIRCUIT_PROGRESS))
+	{
+		TRACE0("Failed to create progress bar\n");
+		return -1;      // fail to create
+	}
+	m_wndProgress.SetRange(0,100);
 	m_wndProgress.SetPos(0);
-	m_wndStatusBar.SetPaneInfo(2, ID_CIRCUIT_NUMBER, SBPS_NOBORDERS, 100);
+
 	return 0;
 }
 
@@ -87,11 +101,8 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if( !CMDIFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
-	cs.style &= ~WS_THICKFRAME;
-	//使最大化按钮不可用
-	cs.style &= ~WS_MAXIMIZEBOX;
-	cs.cy=900;//!!!!
-	cs.cx=1200;
+	cs.cy=1800;
+	cs.cx=2400;
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 

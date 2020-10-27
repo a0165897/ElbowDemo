@@ -173,15 +173,16 @@ BEGIN
     POPUP "路径设计(&D)"
     BEGIN
         MENUITEM "参数设置(&Setup Para)",           IDM_FIBER_PATH_CONTROL_PARAMETERS
-        MENUITEM "计算纤维路径(&Compute Path)",       IDM_COMPUTE_FIBER_PATH
-        MENUITEM "计算丝嘴轨迹(&Payeye track)",       IDM_COMPUTE_PAYEYE_TRACK
+        MENUITEM "计算路径(&Compute Path)",         IDM_COMPUTE_FIBER_PATH
+        MENUITEM "丝嘴轨迹(&Payeye track)",         IDM_DESIGN_ALGEBRA_PATTERN
     END
     POPUP "查看(&V)"
     BEGIN
         MENUITEM "显示芯模(&Show  mandrel)",        ID_VIEW_DISPLAY_MANDREL
-        MENUITEM "加载纤维路径(Setup path)",          IDM_DISPLAY_WINDING_SEQUENCE
-        MENUITEM "加载丝嘴路径(Setup &Payeye)",       IDM_DISPLAY_FIBER_TAPE
+        MENUITEM "路径仿真(Draw path)",             IDM_DRAW_FIBER_PATH
+        MENUITEM "设置动态路径(Setup path)",          IDM_DISPLAY_WINDING_SEQUENCE
         MENUITEM "路径实时仿真(Dynamic show)",        IDM_AUTO_DISPLAY_WINDING_PROCESS
+        MENUITEM "设置丝嘴仿真(Setup &Payeye)",       IDM_DRAW_FIBER_TAPE
         MENUITEM "&Display parameter",          ID_VIEW_DISPLAY_PARAMETER
         MENUITEM SEPARATOR
         POPUP "Rotate Object"
@@ -428,31 +429,19 @@ BEGIN
     EDITTEXT        IDC_TUBE_LENGTH,120,88,46,16,ES_AUTOHSCROLL
 END
 
-IDD_FIBER_PATH_CONTROL_TUBE DIALOGEX 0, 0, 237, 273
+IDD_FIBER_PATH_CONTROL_TUBE DIALOGEX 0, 0, 311, 182
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 10, "System", 700, 0, 0x86
 BEGIN
-    DEFPUSHBUTTON   "确定",IDOK,56,252,50,14
-    PUSHBUTTON      "取消",IDCANCEL,122,252,50,14
-    LTEXT           "[缠绕角][degree] ",IDC_STATIC,33,34,59,8
-    LTEXT           "[纤维宽度][mm] ",IDC_STATIC,33,50,57,8
-    EDITTEXT        IDC_TUBE_WINDING_ANGLE,165,31,40,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_TUBE_BAND_WIDTH,165,48,40,14,ES_AUTOHSCROLL
-    LTEXT           "[切点数]",IDC_STATIC,33,85,31,8
-    EDITTEXT        IDC_TUBE_CUT_NUM,165,83,40,14,ES_AUTOHSCROLL
-    GROUPBOX        "纤维参数",IDC_STATIC,21,15,195,97
-    GROUPBOX        "缠绕机参数",IDC_STATIC,21,122,196,110
-    LTEXT           "[纤维厚度][mm] ",IDC_STATIC,33,68,57,8
-    EDITTEXT        IDC_TUBE_BAND_THICKNESS,165,66,40,14,ES_AUTOHSCROLL
-    LTEXT           "[芯模转速][r/s] ",IDC_STATIC,33,140,54,8
-    EDITTEXT        IDC_TUBE_MANDREL_SPEED,164,137,40,14,ES_AUTOHSCROLL
-    LTEXT           "[吐丝嘴芯模距离][cm] ",IDC_STATIC,33,156,80,8
-    EDITTEXT        IDC_TUBE_MANDREL_PAYEYE_DISTANCE,164,153,40,14,ES_AUTOHSCROLL
-    LTEXT           "[吐丝嘴-芯模左端距离][cm]",IDC_STATIC,33,172,97,8
-    EDITTEXT        IDC_TUBE_MANDREL_PAYEYE_LEFT_DISTANCE,164,169,40,14,ES_AUTOHSCROLL
-    LTEXT           "[芯模冗余长度][cm]",IDC_STATIC,33,188,70,8
-    EDITTEXT        IDC_TUBE_MANDREL_REDUNDANCY,164,185,40,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "确定",IDOK,97,161,50,14
+    PUSHBUTTON      "取消",IDCANCEL,163,161,50,14
+    LTEXT           "Winding Angle [degree] [缠绕角]",IDC_STATIC,69,36,108,8
+    LTEXT           "Band Width [cm] [纤维宽度]",IDC_STATIC,69,52,95,8
+    EDITTEXT        IDC_TUBE_WINDING_ANGLE,190,33,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TUBE_BAND_WIDTH,190,50,40,14,ES_AUTOHSCROLL
+    LTEXT           "Jump Num [cm] [切点数]",IDC_STATIC,69,70,83,8
+    EDITTEXT        IDC_TUBE_CUT_NUM,190,68,40,14,ES_AUTOHSCROLL
 END
 
 IDD_CREATE_NEW_CYLINDER DIALOGEX 0, 0, 310, 177
@@ -615,9 +604,9 @@ BEGIN
     IDD_FIBER_PATH_CONTROL_TUBE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 230
+        RIGHTMARGIN, 304
         TOPMARGIN, 7
-        BOTTOMMARGIN, 266
+        BOTTOMMARGIN, 175
     END
 
     IDD_CREATE_NEW_CYLINDER, DIALOG
@@ -650,14 +639,6 @@ IDD_CREATE_NEW_CYLINDER AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Ribbon
-//
-
-IDR_RIBBON1             RT_RIBBON_XML           "res\\ribbon1.mfcribbon-ms"
 
 
 /////////////////////////////////////////////////////////////////////////////

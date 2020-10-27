@@ -1,12 +1,11 @@
 #if !defined(AFX_AUTODISPLAYELAPSE_H__F8E48C56_BDE3_11D3_AD14_0000E83E71C7__INCLUDED_)
-#define AFX_AUTODISPLAYELAPSE_H_F8_E48_C56_BDE3_11D3_AD14_0000_E83_E71_C7_INCLUDED
+#define AFX_AUTODISPLAYELAPSE_H__F8E48C56_BDE3_11D3_AD14_0000E83E71C7__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 // AutoDisplayElapse.h : header file
 //
-#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CAutoDisplayElapse dialog

@@ -1,7 +1,7 @@
 // mfcogl1Doc.cpp : implementation of the CMfcogl1Doc class
 //
-#include "stdafx.h"
 #include <process.h>
+#include "stdafx.h"
 #include "mfcogl1.h"
 #include "mfcogl1Doc.h"
 #include "DlgFiberPathControls.h"
@@ -28,7 +28,7 @@ BEGIN_MESSAGE_MAP(CMfcogl1Doc, CDocument)
 	//{{AFX_MSG_MAP(CMfcogl1Doc)
 	ON_COMMAND(IDM_FIBER_PATH_CONTROL_PARAMETERS, OnSwitchFiberPathControlDlg)
 	ON_COMMAND(IDM_COMPUTE_FIBER_PATH, OnSwitchComputeFiberPath)//纤维路径 选择用那个算法
-	ON_COMMAND(IDM_COMPUTE_PAYEYE_TRACK, OnSwitchComputePayeye)//机器路径 选择用那个算法
+	ON_COMMAND(IDM_DESIGN_ALGEBRA_PATTERN, OnComputePayeye)//弯管 机器路径
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	//}}AFX_MSG_MAP
@@ -40,9 +40,27 @@ END_MESSAGE_MAP()
 CMfcogl1Doc::CMfcogl1Doc()
 {
 	// TODO: add one-time construction code here
-
+	m_friction=0.2;
+	circuit_num=6;
+	m_FilamentWidth=2.0;//cm
+	m_FilamentThickness=0.025;//cm
 	m_WindingCount[0]=0;
+	m_numlayer=1;
+	step=5;
+	m_pipe_radius=15.75; //cm
+	m_sweep_radius=45.75;  //cm
+	m_height=8.5;  //cm
+	cylinder_radius[0]=m_pipe_radius;
+	m_span_angle=PI/2.0;
+	deviation=30.44;
+	Offset=5.0;
+	eyeWidth=6.0;
+	eyeAccelerate=0.5;
+	rollerWidth=5.0;
+	payeye_offset=4.5;
+	track_layer=1;
 
+	phi=alpha=phi_offset=alpha_offset=NULL;
 	pPath=NULL;
 	ptrack=NULL;
 	psite=NULL;
@@ -50,7 +68,7 @@ CMfcogl1Doc::CMfcogl1Doc()
 	flag_add=NULL;
 	phi_add=y_add=alpha_add=NULL;
 	phi_turn=y_turn=alpha_turn=NULL;
-	m_bCanComputing=m_bCanDisplayFiber=false;
+	friction_test=m_bCanComputing=m_bCanDisplayFiber=false;
 	m_bPayeyeComplete=false;
 	m_bUseLayer=data_compress=FALSE;
 	m_bSavePath=m_bSavePayeye=m_bPressTest=FALSE;
@@ -80,8 +98,132 @@ CMfcogl1Doc::~CMfcogl1Doc()
 		delete []ptrack;
 		ptrack=NULL;
 	}
+}
 
-	CMfcogl1Doc::CleanTubeMemory();
+
+//打开弯管的输入纤维轨迹控制参数对话框，完成数据更新
+void CMfcogl1Doc::OnOpenFiberPathControlParametersDlg() 
+{
+	if((!m_bSavePath&&m_bCanDisplayFiber)||(!m_bSavePayeye&&m_bPayeyeComplete))
+	{
+		CHintDialog hdlg;
+		if(hdlg.DoModal()==IDOK)return;
+	}
+	InitialAngle();
+	CDlgFiberPathControls fpDlg;
+	fpDlg.m_reference_winding_angle=m_IniWndAngle*180.0/PI;
+	if(IDOK==fpDlg.DoModal())
+	{
+		ResetWndDesign();
+		m_friction=fpDlg.m_max_friction;
+		if(	fpDlg.m_reference_winding_angle>m_IniWndAngle*180/PI)
+		{
+			m_IniWndAngle=fpDlg.m_reference_winding_angle*PI/180.0;//should convert from degree to radian
+		}
+		m_FilamentWidth=fpDlg.m_fiber_band_width;
+		m_bUseLayer=fpDlg.m_use_layer;
+		if(m_bUseLayer)/*m_numlayer=fpDlg.m_layer*/;
+		else circuit_num=fpDlg.m_path_loops;
+
+		m_FilamentThickness=fpDlg.m_thickness;
+		Offset=fpDlg.m_offset;
+		eyeWidth=fpDlg.m_eye_width;
+		eyeAccelerate=fpDlg.m_eye_accelerate;
+		rollerWidth=fpDlg.m_roller_width;
+		payeye_offset=fpDlg.m_payeye_offset;
+		track_layer=fpDlg.m_payout_layer;
+		data_format=fpDlg.m_data_format;
+		data_compress=fpDlg.m_data_compress;
+		m_bCanComputing=true;
+
+	}
+}
+
+
+//弯管
+void CMfcogl1Doc::OnComputeFiberPath() 
+{
+	if(m_bCanDisplayFiber)
+	{
+		AfxMessageBox(_T("Old path data has been computed !"));
+		return;
+	}
+	if(m_bCanComputing)
+	{
+		CWaitCursor wait;
+		CString astring;
+		if(fabs(m_height-15.0)<tolerance)
+		{
+
+			if(fabs(m_FilamentWidth-1.0)<tolerance)
+			{
+				if(m_bUseLayer)ReadDataFromDisk("FiberPath1f.wdf","wdf");
+				else ReadDataFromDisk("FiberPath1p.wdf","wdf");
+			}
+			if(fabs(m_FilamentWidth-2.0)<tolerance)
+			{
+				if(m_bUseLayer)ReadDataFromDisk("FiberPath2f.wdf","wdf");
+				else ReadDataFromDisk("FiberPath2p.wdf","wdf");
+			}
+		}
+		else
+		{
+			if(fabs(m_FilamentWidth-1.0)<tolerance)
+			{
+				if(m_bUseLayer)ReadDataFromDisk("FiberPathr1f.wdf","wdf");
+				else ReadDataFromDisk("FiberPathr1p.wdf","wdf");
+			} 
+			if(fabs(m_FilamentWidth-2.0)<tolerance)
+			{
+				if(m_bUseLayer)ReadDataFromDisk("FiberPathr2f.wdf","wdf");
+				else ReadDataFromDisk("FiberPathr2p.wdf","wdf");
+			}
+		}
+
+
+		astring.Format("Stable winding path completed,algebric pattern is M=%d,K=%d",m,k);
+		AfxMessageBox(astring);
+
+		m_bCanComputing=false;
+		m_bCanDisplayFiber=true;
+
+	}	
+	else
+	{
+		AfxMessageBox(_T("Please setup filament winding parameter first"));
+	}
+}
+
+
+void CMfcogl1Doc::OnComputePayeye() 
+{
+	if(m_bPayeyeComplete)
+	{
+		AfxMessageBox(_T("Old payout eye track has been computed !"));
+		return;
+	}
+	if(m_bCanDisplayFiber)
+	{
+		if(fabs(m_height-15.0)<tolerance)
+		{
+
+			if(fabs(m_FilamentWidth-2.0)<tolerance)
+			{
+				if(m_bUseLayer)ReadDataFromDisk("FiberPath2f.mdf","mdf");
+				else ReadDataFromDisk("FiberPath2p.mdf","mdf");
+			}
+		}
+		else
+		{
+			if(fabs(m_FilamentWidth-2.0)<tolerance)
+			{
+				if(m_bUseLayer)ReadDataFromDisk("FiberPathr2f.mdf","mdf");
+				else ReadDataFromDisk("FiberPathr2p.mdf","mdf");
+			}
+		}
+	}
+	else AfxMessageBox(_T("Please compute fiber path first!"));
+
 }
 
 bool CMfcogl1Doc::IsEachPrime(int m1, int m2)
@@ -466,7 +608,7 @@ void CMfcogl1Doc::OnSwitchFiberPathControlDlg() {
 		OnOpenFiberPathControlTubeParametersDlg();
 	}
 	else if(m_isShowing == 2) {//elbow
-		//OnOpenFiberPathControlParametersDlg();
+		OnOpenFiberPathControlParametersDlg();
 	}
 }
 
@@ -478,199 +620,59 @@ void CMfcogl1Doc::OnOpenFiberPathControlTubeParametersDlg() {
 		m_doc_tube_winding_angle = fpTubeDlg.m_dlg_tube_winding_angle * PI / 180;
 		m_doc_tube_band_width = fpTubeDlg.m_dlg_tube_band_width;
 		m_doc_tube_cut_num = fpTubeDlg.m_dlg_tube_cut_num;
-
-		payeye.mandrel_redundancy = fpTubeDlg.m_dlg_tube_mandrel_redundancy;
-		payeye.mandrel_speed = fpTubeDlg.m_dlg_tube_mandrel_speed;
-		payeye.pm_distance = fpTubeDlg.m_dlg_tube_pm_distance;
-		payeye.pm_left_distance = fpTubeDlg.m_dlg_tube_pm_left_distance;
-
-		m_bCanComputing = true;
-		angleStep = (payeye.mandrel_speed * 2 * PI) / 10;// 1/10秒 转过多少角度
-
-		CMfcogl1View* pView;
-		POSITION pos = GetFirstViewPosition();
-		pView = (CMfcogl1View*)GetNextView(pos);
-
-		model.a = pView->m_view_tube_a;
-		model.b = pView->m_view_tube_b;
-		model.length = pView->m_view_tube_length;
-		model.r = pView->m_view_tube_r;
-		model.angle = m_doc_tube_winding_angle;
-		model.width = m_doc_tube_band_width;
-
-		//计算合适的切点数(缠绕一周出发点的总量)，跳跃数(两次出发点序号的差值)
-		float round = 2 * PI * model.r + 4 * model.a + 4 * model.b;//周长
-		float real_width = model.width / abs(cos(model.angle));//实际切面宽
-		M0 = ceil(round / real_width);//实际剖分段数
-		interval = round / M0;//剖分步长
-		cutNum = m_doc_tube_cut_num;
-
-		while ((M0 + 1) % cutNum != 0) {//缩小纤维半径以满足切点数约束
-			model.width -= 0.05;
-			real_width = model.width / abs(cos(model.angle));
-			M0 = ceil(round / real_width);
-			interval = round / M0;
-		}
-		jumpNum = (M0 + 1) / cutNum;
-
-		CString STemp;
-		STemp.Format(_T("纱宽(修正) = %.3f mm\n等分数=%d\n缠绕角 = %.3f degree\n切点数=%d\n跳跃数=%d"), real_width, M0, fpTubeDlg.m_dlg_tube_winding_angle, cutNum, jumpNum);
-		AfxMessageBox(STemp);
-		if (jumpNum == -1) {
-			OnOpenFiberPathControlTubeParametersDlg();
-		}
 	}
+	m_bCanComputing = true;
+
+	CMfcogl1View* pView;
+	POSITION pos = GetFirstViewPosition();
+	pView = (CMfcogl1View*)GetNextView(pos);
+
+	model.a = pView->m_view_tube_a + 0.1;
+	model.b = pView->m_view_tube_b + 0.1;
+	model.length = pView->m_view_tube_length;
+	model.r = pView->m_view_tube_r;
+	model.angle = m_doc_tube_winding_angle;
+	model.width = m_doc_tube_band_width;
+
+	float round = 2 * PI * model.r + 4 * model.a + 4 * model.b;
+	float real_width = model.width / abs(cos(model.angle));
+	int M0 = ceil(round / real_width);//返回大于等于它的最小整数
+	float interval = round / M0;
+	cutNum = m_doc_tube_cut_num;
+	int rem = (M0 + 1) % cutNum;//最小互素数 27  1 5 9 13 17 21 25 2   最小切点数7
+	while (rem != 0) {
+		model.width -= 0.05;
+		real_width = model.width / abs(cos(model.angle));
+		M0 = ceil(round / real_width);
+		interval = round / M0;
+		rem = (M0 + 1) % cutNum;
+	}
+	jumpNum = (M0 + 1) / cutNum;
+	//if (rem == 0) {
+	//	jumpNum = (M0 + 1) / cutNum;
+	//}
+	//else {
+	//	jumpNum = -1;
+	//}
+	CString STemp;
+	STemp.Format(_T("纱宽(修正) = %.3f mm\n等分数=%d\n缠绕角 = %.3f degree\n切点数=%d\n跳跃数=%d"), real_width, M0, fpTubeDlg.m_dlg_tube_winding_angle,cutNum,jumpNum);
+	AfxMessageBox(STemp);
+	if (jumpNum == -1) {
+		OnOpenFiberPathControlTubeParametersDlg();
+	}
+
 }
 //纤维束
 void CMfcogl1Doc::OnSwitchComputeFiberPath() {
 	if (m_isShowing == 1) {//tube
 		OnComputeFiberPathTube();
 	}
-	else if (m_isShowing == 3) {//cylinder
-		//cylidner is doing
-		debug_show("cylinder is doing...");
+	else if (m_isShowing == 2) {//elbow
+		OnComputeFiberPath();
 	}
 }
-void CMfcogl1Doc::OnSwitchComputePayeye(){
-	if(m_isShowing == 1){//tube
-		OnComputePayeyeTube();
-	}
-	if(m_isShowing == 3){
-		debug_show("cylinder is doing...");
-	}
-}
-
-void CMfcogl1Doc::CleanTubeMemory() {
-	if (TubePointList != NULL) {
-		delete TubePointList;
-		TubePointList = NULL;
-	}
-	if (TubeTrackListTime != NULL) {
-		delete TubeTrackListTime;
-		TubeTrackListTime = NULL;
-	}
-	if (TubePointListTime != NULL) {
-		delete TubePointListTime;
-		TubePointListTime = NULL;
-	}
-	if (distanceE != NULL) {
-		delete distanceE;
-		distanceE = NULL;
-	}
-	TubeStartList.clear();
-}
-
-//生成起始点列表 在两个头上各绕一圈
-int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct position>& TubeStartList) {
-	float halfInterval = interval / 2;
-	int i = 0;
-	struct position p;
-	for (i = 0; i * interval < model.a; i++) {
-		p.x = i * interval;
-		p.y = model.b + model.r;
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-	for (; i * interval < model.a + PI * model.r / 2; i++) {
-		p.x = model.a + model.r * sin((i * interval - model.a) / model.r);
-		p.y = model.b + model.r * cos((i * interval - model.a) / model.r);
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-	for (; i * interval < model.a + PI * model.r / 2 + 2 * model.b; i++) {
-		p.x = model.a + model.r;
-		p.y = model.b - (i * interval - model.a - PI * model.r / 2);
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-	for (; i * interval < model.a + PI * model.r + 2 * model.b; i++) {
-		p.x = model.a + model.r * cos((i * interval - (model.a + PI * model.r / 2 + 2 * model.b)) / model.r);
-		p.y = -model.b - model.r * sin((i * interval - (model.a + PI * model.r / 2 + 2 * model.b)) / model.r);
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-	for (; i * interval < 3 * model.a + PI * model.r + 2 * model.b; i++) {
-		p.x = 2 * model.a - i * interval + PI * model.r + 2 * model.b;
-		p.y = -model.b - model.r;
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-	for (; i * interval < 3 * model.a + 1.5 * PI * model.r + 2 * model.b; i++) {
-		p.x = -model.a - model.r * sin((i * interval - (3 * model.a + PI * model.r + 2 * model.b)) / model.r);
-		p.y = -model.b - model.r * cos((i * interval - (3 * model.a + PI * model.r + 2 * model.b)) / model.r);
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-	for (; i * interval < 3 * model.a + 1.5 * PI * model.r + 4 * model.b; i++) {
-		p.x = -model.a - model.r;
-		p.y = -model.b + i * interval - 3 * model.a - 1.5 * PI * model.r - 2 * model.b;
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-	for (; i * interval < 3 * model.a + 2 * PI * model.r + 4 * model.b; i++) {
-		p.x = -model.a - model.r * cos((i * interval - (3 * model.a + 1.5 * PI * model.r + 4 * model.b)) / model.r);
-		p.y = model.b + model.r * sin((i * interval - (3 * model.a + 1.5 * PI * model.r + 4 * model.b)) / model.r);
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-	for (; i * interval < 4 * model.a + 2 * PI * model.r + 4 * model.b - tiny; i++) {
-		p.x = i * interval - (4 * model.a + 2 * PI * model.r + 4 * model.b);
-		p.y = model.b + model.r;
-		p.z = 0;
-		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = model.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
-	}
-
-	return TubeStartList.size();
-}
-
 //方管纤维束
 void CMfcogl1Doc::OnComputeFiberPathTube() {
-	CMfcogl1Doc::CleanTubeMemory();
 	if (m_bCanComputing == true)
 	{
 		/* algorithm:
@@ -678,16 +680,23 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 			step2:according to algebraic pattern(M,	), decide which edge point to wind back
 			step3:keep the winding angle, wind to another edge,back to step2,until winded M time.
 		*/
+
+		CMfcogl1View* pView;
+		POSITION pos = GetFirstViewPosition();
+		pView = (CMfcogl1View*)GetNextView(pos);
+
+		model.stepLength = 0;
+		windingPathStep = 0.1;
+		tmpAngle = 0;
+		int M0 = ceil((2 * PI * model.r + 4 * model.a + 4 * model.b) / (model.width / abs(cos(model.angle))));
+		std::deque<struct position>* pque = new std::deque<struct position>;
 		TubePointList = new std::deque<struct TubePoint>;
 		TubeTrackListTime = new std::deque<struct Track>;
 		TubePointListTime = new std::deque<struct TubePoint>;
-		//debug
+		kList = new std::deque<int>;
 		distanceE = new std::deque<float>;
-
-		windingPathStep = 0.05;//计算的步长
-		currentAngle = 0;
-		TubeCurrentStart[0] = TubeCurrentStart[1] = -1;
-
+		//生成所有线路的起点
+		int totalNum = OnGenerateTubeWindingOrder( pque);
 		//generate GL list
 		glNewList(FIBER_PATH_LIST, GL_COMPILE); //FIBER_PATH_LIST     2
 
@@ -700,28 +709,27 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 		glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
 		glMaterialf(GL_FRONT, GL_SHININESS, matShine);
 
-		//生成所有路径的起点
-		int totalNum = OnGenerateTubeStartList(TubeStartList);
-		//计算循环
-		while (TubeStartList.size() != 0  ) {
-			
-			OnGeneratePosition(TubeStartList);
-			OnRenderSinglePath();//计算本纤维路径的所有顶点位置并输入glList和TubePointList
-			OnComputeStartAngle();
-			OnComputePayeyeTube();			//计算一条纤维带
-
-			AfxMessageBox("Payeye Track Computation Finished.");
-
+		position.d = pque->front().d;
+		position.x = pque->front().x;
+		position.y = pque->front().y;
+		position.z = pque->front().z;
+		kList->push_front(pque->front().i);
+		pque->erase(pque->begin());
+		OnRenderSinglePath();
+		//OnComputeTubePayeye();
+		while (pque->size() != 0 && testStop) {
+			//TubePointList = new std::deque<struct TubePoint>;
+			OnGeneratePosition(pque);//根据当前位置和跳跃数算出下一条线路的起点
+			OnRenderSinglePath();//计算本线路的所有顶点位置并输入glList
+			//OnComputeStartAngle();
+			//OnComputeTubePayeye();			//计算一条纤维带
 		}
-		glEndList();
 		m_WindingCount[0] = TubePointList->size();
 		AfxMessageBox("纤维路径计算完毕\ntube Track Computation Finished.");
- 		m_bCanDisplayFiber = true;
 
-		CMfcogl1View* pView;
-		POSITION pos = GetFirstViewPosition();
-		pView = (CMfcogl1View*)GetNextView(pos);
-		pView->m_cview_enable_tape_display = true;
+ 		m_bCanDisplayFiber = true;
+		glEndList();
+		pView->m_cview_enable_tape_display = false;
 		pView->Invalidate(false);
 	}
 	else{
@@ -729,345 +737,334 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 	}
 }
 
-//根据当前位置和跳跃数算出本条路径的起点
-void CMfcogl1Doc::OnGeneratePosition(std::deque<struct position>&TubeStartList) {
-
-	vector trackStart = { cos(-currentAngle), sin(-currentAngle),0 };
-
-	float angle = -1;
-	float cross, localAngle;
-	auto tmpPosition = TubeStartList.begin();
-	int currentStart = (currentPosition.direction == -1) ?  TubeCurrentStart[0]: TubeCurrentStart[1];
-
-	if (currentStart != -1) {
-		auto i = TubeStartList.begin();
-		for (; i < TubeStartList.end(); i++) {//遍历 找到下一个合适的节点 
-			if (currentPosition.direction != (*i).direction && (*i).index == (currentStart + jumpNum) % M0) {
-				tmpPosition = i;
-				break;
-			}
-		}
-		if (i == TubeStartList.end()) {
-			CString STemp;
-			STemp.Format("错误：OnGeneratePosition 找不到合适的节点 ");
-			AfxMessageBox(STemp);
-		}
+int CMfcogl1Doc::OnGenerateTubeWindingOrder(std::deque<struct position>* pque) {
+	//设置一组位于两端的position,符合代数模式 并生成所有路径起点
+	float round = 2 * PI * model.r + 4 * model.a + 4 * model.b;
+	int M0 = ceil( round / ( model.width / abs(cos(model.angle)) )  );//返回大于等于它的最小整数
+	float interval =round / M0;
+	float halfInterval = interval / 2;
+	int i = 0;
+	struct position p;
+	for (i = 0; i * interval < model.a; i++) {
+		p.x = i * interval;
+		p.y = model.b + model.r;
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
+	}
+	for (; i * interval < model.a + PI * model.r / 2; i++) {
+		p.x = model.a + model.r * sin((i * interval - model.a) / model.r);
+		p.y = model.b + model.r * cos((i * interval - model.a) / model.r);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
+	}
+	for (; i * interval < model.a + PI * model.r / 2 + 2 * model.b; i++) {
+		p.x = model.a + model.r;
+		p.y = model.b - (i * interval - model.a - PI * model.r / 2);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
+	}
+	for (; i * interval < model.a + PI * model.r + 2 * model.b; i++) {
+		p.x = model.a + model.r * cos((i * interval - (model.a + PI * model.r / 2 + 2 * model.b)) / model.r);
+		p.y = -model.b - model.r * sin((i * interval - (model.a + PI * model.r / 2 + 2 * model.b)) / model.r);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
+	}
+	for (; i * interval < 3 * model.a + PI * model.r + 2 * model.b; i++) {
+		p.x = 2 * model.a - i * interval + PI * model.r + 2 * model.b;
+		p.y = -model.b - model.r;
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
+	}
+	for (; i * interval < 3 * model.a + 1.5 * PI * model.r + 2 * model.b; i++) {
+		p.x = -model.a - model.r * sin((i * interval - (3 * model.a + PI * model.r + 2 * model.b)) / model.r);
+		p.y = -model.b - model.r * cos((i * interval - (3 * model.a + PI * model.r + 2 * model.b)) / model.r);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
+	}
+	for (; i * interval < 3 * model.a + 1.5 * PI * model.r + 4 * model.b; i++) {
+		p.x = -model.a - model.r;
+		p.y = -model.b + i * interval - 3 * model.a - 1.5 * PI * model.r - 2 * model.b;
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
+	}
+	for (; i * interval < 3 * model.a + 2 * PI * model.r + 4 * model.b; i++) {
+		p.x = -model.a - model.r * cos((i * interval - (3 * model.a + 1.5 * PI * model.r + 4 * model.b)) / model.r);
+		p.y = model.b + model.r * sin((i * interval - (3 * model.a + 1.5 * PI * model.r + 4 * model.b)) / model.r);
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
+	}
+	for (; i * interval < 4 * model.a + 2 * PI * model.r + 4 * model.b-tiny; i++) {
+		p.x = i * interval - (4 * model.a + 2 * PI * model.r + 4 * model.b);
+		p.y = model.b + model.r;
+		p.z = 0;
+		p.i = i;
+		p.d = 1;
+		pque->push_back(p);
+		p.z = model.length;
+		p.d = -1;
+		pque->push_back(p);
 	}
 
-	Track lastTrack;
-	lastTrack.x = model.a + model.r + payeye.pm_distance;
-	lastTrack.z = (*tmpPosition).direction > 0 ? 0 : model.length;
-	lastTrack.spindleAngle = currentAngle + acos(angle);
-	lastTrack.swingAngle = (*tmpPosition).direction > 0 ? -PI / 2 : PI / 2;
-
-
-	currentPosition = *tmpPosition;
-
-	if (currentPosition.direction ==1) {
-		TubeCurrentStart[0] = (*tmpPosition).index;
-	}
-	else {
-		TubeCurrentStart[1]=(*tmpPosition).index;
-	}
-	TubeStartList.erase(tmpPosition);
+	return pque->size();
 }
 
-//算出单根纤维路径
+//根据当前位置和跳跃数算出下一条线路的起点
+void CMfcogl1Doc::OnGeneratePosition(std::deque<struct position>* pque) {
+
+	//vector trackStart = { cos(-tmpAngle), sin(-tmpAngle),0 };
+	float angle = -1;
+	float cross, localAngle;
+	int M0 = ceil((2 * PI * model.r + 4 * model.a + 4 * model.b) / (model.width / abs(cos(model.angle))));
+	auto tmpPosition = pque->begin();
+	int lastOut;
+	if (position.d == -1) {
+		lastOut = kList->front();
+	}
+	else {
+		lastOut = kList->back();
+	}
+	for (auto i = pque->begin(); i < pque->end(); i++) {//遍历 找到下一个合适的节点 
+		if (position.d != (*i).d && (*i).i == (lastOut+jumpNum)%M0) {
+			/*伴随角度的变换计算*   完全不用这样考虑 在钉外绕圈 可以从任意一个角度进去 即使是反向的角度，最多绕一圈而已/
+			/*cross = trackStart.x * (*i).y - trackStart.y * (*i).x;
+			if (cross > 0) {
+				localAngle = ((*i).x * trackStart.x + (*i).y * trackStart.y) / sqrt(pow((*i).x, 2) + pow((*i).y, 2));
+				if (localAngle > angle) { angle = localAngle; tmpPosition = i; }
+			}*/
+			/*最小距离计算*/
+			/*cross =position.x * (*i).y - position.y * (*i).x;
+			if (cross < 0) {
+				localAngle = ((*i).x * position.x + (*i).y * position.y) / sqrt(pow((*i).x, 2) + pow((*i).y, 2));
+				if (localAngle > angle) {
+					angle = localAngle;
+					tmpPosition = i;
+				}
+			}*/
+			/*MK 固定跳跃数(切点数)* /
+			/*
+			5等分 3切点 2跳跃数  1 3 5 2 4   1 +3X = 22 X =21/3=7
+			20等分 3 切点 7跳跃数 1 X X 2 X X 3 X X   1 8 15 2 9 16 3    
+			1+CUT*JUMP = DF+2  JUMP=(DF+1) / CUT 
+			CUT*JUMP = DF+1         3J=DF+1    */
+			tmpPosition = i;
+			break;
+		}
+	}
+
+	position.x = (*tmpPosition).x;
+	position.y = (*tmpPosition).y;
+	position.z = (*tmpPosition).z;
+	position.d = (*tmpPosition).d;
+	if (position.d ==1) {
+		kList->push_front((*tmpPosition).i);
+	}
+	else {
+		kList->push_back((*tmpPosition).i);
+	}
+	pque->erase(tmpPosition);
+}
+
 void CMfcogl1Doc::OnRenderSinglePath() {
-	glBegin(GL_LINE_STRIP);
 	//initial OpenGL
 	//判断当前position处于芯模的哪个面，从而选中合适的入口。
 	//类似于状态机，本质上是对两个OnRender不同状态的调用
 	//缠绕到面的边缘时，会在OnRender中递归调用下一个面的OnRender，直到缠绕到芯模边缘退出。
-	if (-model.a <= currentPosition.x && currentPosition.x < model.a && currentPosition.y>0) {
+	if (-model.a <= position.x && position.x < model.a && position.y>0) {
 		OnRenderLinePart(1);
 	}
-	else if (model.a <= currentPosition.x && currentPosition.x < model.a + model.r && currentPosition.y > 0) {
+	else if (model.a <= position.x && position.x < model.a + model.r && position.y > 0) {
 		OnRenderCurvePart(2);
 	}
-	else if (-model.b < currentPosition.y && currentPosition.y <= model.b && currentPosition.x>0) {
+	else if (-model.b < position.y && position.y <= model.b && position.x>0) {
 		OnRenderLinePart(3);
 	}
-	else if (-model.b - model.r < currentPosition.y && currentPosition.y <= -model.b && currentPosition.x>0) {
+	else if (-model.b - model.r < position.y && position.y <= -model.b && position.x>0) {
 		OnRenderCurvePart(4);
 	}
-	else if (-model.a < currentPosition.x && currentPosition.x <= model.a && currentPosition.y < 0) {
+	else if (-model.a < position.x && position.x <= model.a && position.y < 0) {
 		OnRenderLinePart(5);
 	}
-	else if (-model.a - model.r < currentPosition.x && currentPosition.x <= -model.a && currentPosition.y < 0) {
+	else if (-model.a - model.r < position.x && position.x <= -model.a && position.y < 0) {
 		OnRenderCurvePart(6);
 	}
-	else if (-model.b <= currentPosition.y && currentPosition.y < model.b && currentPosition.x < 0) {
+	else if (-model.b <= position.y && position.y < model.b && position.x < 0) {
 		OnRenderLinePart(7);
 	}
-	else if (-model.a - model.r <= currentPosition.x && currentPosition.x < -model.a && currentPosition.y >0) {
+	else if (-model.a - model.r <= position.x && position.x < -model.a && position.y >0) {
 		OnRenderCurvePart(8);
 	}
-	glEnd();
+
+	//iff out of tube come here.
+	//choose next line in the list p.
+	//position is global.
 }
 
+//to render an arbitrary fiber path 
 void CMfcogl1Doc::updatePosition(float* nextPoint) {
-	currentPosition.x = nextPoint[0];	currentPosition.y = nextPoint[1]; currentPosition.z = nextPoint[2];
+	position.x = nextPoint[0];	position.y = nextPoint[1]; position.z = nextPoint[2];
 }
 
+//有没有超出两端
 int CMfcogl1Doc::outTubeEdge() {
-	return (currentPosition.z < 0) ? -1 : (currentPosition.z >= model.length ? 1 : 0);
+	return (position.z < 0) ? -1 : (position.z >= model.length ? 1 : 0);
 }
 
-void CMfcogl1Doc::insertPoint(float* nextPoint) {
-	glVertex3fv(nextPoint);
-}
-
-int CMfcogl1Doc::OnRenderLinePart(int state) {
-	float nextPoint[3] = { currentPosition.x,currentPosition.y,currentPosition.z };
-	float startPoint[3] = { currentPosition.x,currentPosition.y,currentPosition.z };
-	model.stepLength = 0;
-	int direction = currentPosition.direction;
-	switch (state) {
-	case 1:
-
-		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
-
-		while (nextPoint[0] < model.a && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
-			insertPoint(nextPoint);
-
-			nextPoint[0] = startPoint[0] + model.stepLength * sin(model.angle);
-			nextPoint[1] = startPoint[1];
-			nextPoint[2] = startPoint[2] + model.stepLength * cos(model.angle) * direction;
-
-			tempTubePoint.x = nextPoint[0];
-			tempTubePoint.y = nextPoint[1];
-			tempTubePoint.z = nextPoint[2];
-			tempTubePoint.normal_radian = PI / 2;
-			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.z = direction * cos(model.angle);
-			tempTubePoint.direction = currentPosition.direction;
-			tempTubePoint.index = currentPosition.index;
-			TubePointList->push_back(tempTubePoint);
-
-			model.stepLength += windingPathStep;
-		}
-
-		break;
-	case 3:
-
-		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
-
-		while (-model.b < nextPoint[1] && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
-			insertPoint(nextPoint);
-			nextPoint[0] = startPoint[0];
-			nextPoint[1] = startPoint[1] - model.stepLength * sin(model.angle);
-			nextPoint[2] = startPoint[2] + model.stepLength * cos(model.angle) * direction;
-
-			tempTubePoint.x = nextPoint[0];
-			tempTubePoint.y = nextPoint[1];
-			tempTubePoint.z = nextPoint[2];
-			tempTubePoint.normal_radian = 0;
-			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.z = direction * cos(model.angle);
-			tempTubePoint.direction = currentPosition.direction;
-			tempTubePoint.index = currentPosition.index;
-			TubePointList->push_back(tempTubePoint);
-
-			model.stepLength += windingPathStep;
-		}
-
-		break;
-	case 5:
-
-		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
-
-		while (-model.a < nextPoint[0] && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
-			insertPoint(nextPoint);
-
-			nextPoint[0] = startPoint[0] - model.stepLength * sin(model.angle);
-			nextPoint[1] = startPoint[1];
-			nextPoint[2] = startPoint[2] + model.stepLength * cos(model.angle) * direction;
-
-			tempTubePoint.x = nextPoint[0];
-			tempTubePoint.y = nextPoint[1];
-			tempTubePoint.z = nextPoint[2];
-			tempTubePoint.normal_radian = -PI / 2;
-			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.z = direction * cos(model.angle);
-			tempTubePoint.direction = currentPosition.direction;
-			tempTubePoint.index = currentPosition.index;
-			TubePointList->push_back(tempTubePoint);
-
-			model.stepLength += windingPathStep;
-		}
-
-		break;
-	case 7:
-
-		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
-
-		while (nextPoint[1] < model.b && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
-			insertPoint(nextPoint);
-
-			nextPoint[0] = startPoint[0];
-			nextPoint[1] = startPoint[1] + model.stepLength * sin(model.angle);
-			nextPoint[2] = startPoint[2] + model.stepLength * cos(model.angle) * direction;
-
-			tempTubePoint.x = nextPoint[0];
-			tempTubePoint.y = nextPoint[1];
-			tempTubePoint.z = nextPoint[2];
-			tempTubePoint.normal_radian = -PI;
-			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.z = direction * cos(model.angle);
-			tempTubePoint.direction = currentPosition.direction;
-			tempTubePoint.index = currentPosition.index;
-			TubePointList->push_back(tempTubePoint);
-
-			model.stepLength += windingPathStep;
-		}
-
-		break;
-	default:
-		break;
-	}
-
-	updatePosition(nextPoint);
-	if (outTubeEdge() == 0) {//from one part move into another neighbor part.   some how like a LSM.
-		OnRenderCurvePart(state + 1);
-	}
-	else {
-		return outTubeEdge();
-	}
-}
-
+//对一个倒角弧面上的线段计算路径，根据是否越界判断继续计算与否
 int CMfcogl1Doc::OnRenderCurvePart(int state) {
-	float startPoint[3] = { currentPosition.x,currentPosition.y,currentPosition.z };
-	float nextPoint[3] = { currentPosition.x,currentPosition.y,currentPosition.z };
+	float startPoint[3] = { position.x,position.y,position.z };
+	float nextPoint[3] = { position.x,position.y,position.z };
 	float phase = 0;
 	model.stepLength = 0;
-	int direction = currentPosition.direction;
-	//此时，为了便于计算，将stepLength定义为在该分面经过的弧度（而非曲线弧长）。为了保持曲线弧长增量不变，需要计算其在本分面上对应Δ弧度。
-	float adjust = model.r / sin(model.angle);
+	int direction = position.d;
+
 	switch (state) {
 	case 2:
-		phase = atan((currentPosition.x - model.a) / (currentPosition.y - model.b));
+		phase = atan((position.x - model.a) / (position.y - model.b));
 		model.stepLength = phase;
 		startPoint[0] = model.a;
 		startPoint[1] = model.b;
-
+		glBegin(GL_LINE_STRIP);
 		//圆柱面上测地线 对弧面的三条边约束
 		while (model.stepLength <= PI / 2 && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
-			insertPoint(nextPoint);
-
 			//0:横向（2a）1:高（2b）2:纵向（C）angle:缠绕角 nextPoint:递推 m_view_r:倒角半径
 			nextPoint[0] = startPoint[0] + model.r * sin(model.stepLength);
 			nextPoint[1] = startPoint[1] + model.r * cos(model.stepLength);
 			nextPoint[2] = startPoint[2] + model.r * (model.stepLength - phase) / tan(model.angle) * direction;
+			insertPoint(nextPoint);
 
 			tempTubePoint.x = nextPoint[0];
 			tempTubePoint.y = nextPoint[1];
 			tempTubePoint.z = nextPoint[2];
-			tempTubePoint.normal_radian = -model.stepLength + PI / 2;
-			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal_radian - PI / 2);
+			tempTubePoint.normal = -model.stepLength + PI / 2;
+			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal - PI / 2);
 			tempTubePoint.tangent.z = cos(model.angle) * direction;
-			tempTubePoint.direction = currentPosition.direction;
-			tempTubePoint.index = currentPosition.index;
 			TubePointList->push_back(tempTubePoint);
 
-			model.stepLength += windingPathStep/adjust;
+			model.stepLength += windingPathStep;
 		}
-
+		glEnd();
 		break;
 	case 4:
-		phase = PI / 2 + atan((-model.b - currentPosition.y) / (currentPosition.x - model.a));
+		phase = PI / 2 + atan((-model.b - position.y) / (position.x - model.a));
 		model.stepLength = phase;
 		startPoint[0] = model.a;
 		startPoint[1] = -model.b;
-
+		glBegin(GL_LINE_STRIP);
 		//圆柱面上测地线
 		while (model.stepLength <= PI && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
-			insertPoint(nextPoint);
-
 			//0:横向（2a）1:高（2b）2:纵向（C）angle:缠绕角 nextPoint:递推 m_view_r:倒角半径
 			nextPoint[0] = startPoint[0] + model.r * sin(model.stepLength);
 			nextPoint[1] = startPoint[1] + model.r * cos(model.stepLength);
 			nextPoint[2] = startPoint[2] + model.r * (model.stepLength - phase) / tan(model.angle) * direction;
+			insertPoint(nextPoint);
 
 			tempTubePoint.x = nextPoint[0];
 			tempTubePoint.y = nextPoint[1];
 			tempTubePoint.z = nextPoint[2];
-			tempTubePoint.normal_radian = -model.stepLength + PI / 2;
-			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal_radian - PI / 2);
+			tempTubePoint.normal = -model.stepLength + PI / 2;
+			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal - PI / 2);
 			tempTubePoint.tangent.z = direction * cos(model.angle);
-			tempTubePoint.direction = currentPosition.direction;
-			tempTubePoint.index = currentPosition.index;
 			TubePointList->push_back(tempTubePoint);
 
-			model.stepLength += windingPathStep/adjust;
+			model.stepLength += windingPathStep;
 		}
-
+		glEnd();
 		break;
 	case 6:
-		phase = PI + atan((-currentPosition.x - model.a) / (-currentPosition.y - model.b));
+		phase = PI + atan((-position.x - model.a) / (-position.y - model.b));
 		model.stepLength = phase;
 		startPoint[0] = -model.a;
 		startPoint[1] = -model.b;
-
+		glBegin(GL_LINE_STRIP);
 		//圆柱面上测地线
 		while (model.stepLength <= 1.5 * PI && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
-			insertPoint(nextPoint);
-
 			//0:横向（2a）1:高（2b）2:纵向（C）angle:缠绕角 nextPoint:递推 m_view_r:倒角半径
 			nextPoint[0] = startPoint[0] + model.r * sin(model.stepLength);
 			nextPoint[1] = startPoint[1] + model.r * cos(model.stepLength);
 			nextPoint[2] = startPoint[2] + model.r * (model.stepLength - phase) / tan(model.angle) * direction;
+			insertPoint(nextPoint);
 
 			tempTubePoint.x = nextPoint[0];
 			tempTubePoint.y = nextPoint[1];
 			tempTubePoint.z = nextPoint[2];
-			tempTubePoint.normal_radian = -model.stepLength + PI / 2;
-			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal_radian - PI / 2);
+			tempTubePoint.normal = -model.stepLength + PI / 2;
+			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal - PI / 2);
 			tempTubePoint.tangent.z = direction * cos(model.angle);
-			tempTubePoint.direction = currentPosition.direction;
-			tempTubePoint.index = currentPosition.index;
 			TubePointList->push_back(tempTubePoint);
 
-			model.stepLength += windingPathStep/adjust;
+			model.stepLength += windingPathStep;
 		}
-
+		glEnd();
 		break;
 	case 8:
-		phase = 1.5 * PI + atan((currentPosition.y - model.b) / (-currentPosition.x - model.a));
+		phase = 1.5 * PI + atan((position.y - model.b) / (-position.x - model.a));
 		model.stepLength = phase;
 		startPoint[0] = -model.a;
 		startPoint[1] = model.b;
-
+		glBegin(GL_LINE_STRIP);
 		//圆柱面上测地线
 		while (model.stepLength <= 2 * PI && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
 			//0:横向（2a）1:高（2b）2:纵向（c）angle:缠绕角 nextPoint:递推 m_view_r:倒角半径
-			insertPoint(nextPoint);
-
 			nextPoint[0] = startPoint[0] + model.r * sin(model.stepLength);
 			nextPoint[1] = startPoint[1] + model.r * cos(model.stepLength);
 			nextPoint[2] = startPoint[2] + model.r * (model.stepLength - phase) / tan(model.angle) * direction;
+			insertPoint(nextPoint);
 
 			tempTubePoint.x = nextPoint[0];
 			tempTubePoint.y = nextPoint[1];
 			tempTubePoint.z = nextPoint[2];
-			tempTubePoint.normal_radian = -model.stepLength + PI / 2;
-			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal_radian - PI / 2);
-			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal_radian - PI / 2);
+			tempTubePoint.normal = -model.stepLength + PI / 2;
+			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal - PI / 2);
 			tempTubePoint.tangent.z = direction * cos(model.angle);
-			tempTubePoint.direction = currentPosition.direction;
-			tempTubePoint.index = currentPosition.index;
 			TubePointList->push_back(tempTubePoint);
 
-			model.stepLength += windingPathStep/adjust;
+			model.stepLength += windingPathStep;
 		}
-
+		glEnd();
 		break;
 	default:
 		break;
@@ -1082,145 +1079,122 @@ int CMfcogl1Doc::OnRenderCurvePart(int state) {
 	}
 }
 
-void CMfcogl1Doc::OnComputeStartAngle() {
-	auto i = *TubePointList->begin();
-	float x, y;
-	if (abs(i.tangent.x) < 0.001) {
-		x = i.x;
-		float R = model.a + model.r + payeye.pm_distance;
-		y = sqrt(R * R - x * x);
-		if (i.tangent.y < 0) y = -y;
+int CMfcogl1Doc::OnRenderLinePart(int state) {
+	float nextPoint[3] = { position.x,position.y,position.z };
+	float startPoint[3] = { position.x,position.y,position.z };
+	model.stepLength = 0;
+	int direction = position.d;
+	switch (state) {
+	case 1:
+		glBegin(GL_LINE_STRIP);
+		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
+
+		while (nextPoint[0] < model.a && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
+			insertPoint(nextPoint);
+
+			nextPoint[0] = startPoint[0] + model.stepLength * sin(model.angle);
+			nextPoint[1] = startPoint[1];
+			nextPoint[2] = startPoint[2] + model.stepLength * cos(model.angle) * direction;
+
+			tempTubePoint.x = nextPoint[0];
+			tempTubePoint.y = nextPoint[1];
+			tempTubePoint.z = nextPoint[2];
+			tempTubePoint.normal = PI / 2;
+			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.z = direction * cos(model.angle);
+			TubePointList->push_back(tempTubePoint);
+
+			model.stepLength += windingPathStep;
+		}
+		glEnd();
+		break;
+	case 3:
+		glBegin(GL_LINE_STRIP);
+		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
+
+		while (-model.b < nextPoint[1] && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
+			insertPoint(nextPoint);
+			nextPoint[0] = startPoint[0];
+			nextPoint[1] = startPoint[1] - model.stepLength * sin(model.angle);
+			nextPoint[2] = startPoint[2] + model.stepLength * cos(model.angle) * direction;
+
+			tempTubePoint.x = nextPoint[0];
+			tempTubePoint.y = nextPoint[1];
+			tempTubePoint.z = nextPoint[2];
+			tempTubePoint.normal = 0;
+			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.z = direction * cos(model.angle);
+			TubePointList->push_back(tempTubePoint);
+
+			model.stepLength += windingPathStep;
+		}
+		glEnd();
+		break;
+	case 5:
+		glBegin(GL_LINE_STRIP);
+		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
+
+		while (-model.a < nextPoint[0] && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
+			insertPoint(nextPoint);
+
+			nextPoint[0] = startPoint[0] - model.stepLength * sin(model.angle);
+			nextPoint[1] = startPoint[1];
+			nextPoint[2] = startPoint[2] + model.stepLength * cos(model.angle) * direction;
+
+			tempTubePoint.x = nextPoint[0];
+			tempTubePoint.y = nextPoint[1];
+			tempTubePoint.z = nextPoint[2];
+			tempTubePoint.normal = -PI / 2;
+			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.z = direction * cos(model.angle);
+			TubePointList->push_back(tempTubePoint);
+
+			model.stepLength += windingPathStep;
+		}
+		glEnd();
+		break;
+	case 7:
+		glBegin(GL_LINE_STRIP);
+		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
+
+		while (nextPoint[1] < model.b && 0 <= nextPoint[2] && nextPoint[2] <= model.length) {
+			insertPoint(nextPoint);
+
+			nextPoint[0] = startPoint[0];
+			nextPoint[1] = startPoint[1] + model.stepLength * sin(model.angle);
+			nextPoint[2] = startPoint[2] + model.stepLength * cos(model.angle) * direction;
+
+			tempTubePoint.x = nextPoint[0];
+			tempTubePoint.y = nextPoint[1];
+			tempTubePoint.z = nextPoint[2];
+			tempTubePoint.normal = -PI;
+			tempTubePoint.tangent.x = sin(model.angle) * cos(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.y = sin(model.angle) * sin(tempTubePoint.normal - PI / 2);
+			tempTubePoint.tangent.z = direction * cos(model.angle);
+			TubePointList->push_back(tempTubePoint);
+
+			model.stepLength += windingPathStep;
+		}
+		glEnd();
+		break;
+	default:
+		break;
 	}
-	else if (abs(i.tangent.y) < 0.001) {
-		y = i.y;
-		float R = model.a + model.r + payeye.pm_distance;
-		x = sqrt(R * R - y * y);
-		if (i.tangent.x < 0)x = -x;
+
+	updatePosition(nextPoint);
+	if (outTubeEdge() == 0) {//from one part move into another neighbor part.   some how like a LSM.
+		OnRenderCurvePart(state + 1);
 	}
 	else {
-		float A = i.tangent.y / i.tangent.x;
-		float B = i.y - A * i.x;
-		float R = model.a + model.r + payeye.pm_distance;
-		float delta = sqrt(A * A * B * B - (A * A + 1) * (B * B - R * R));
-		float x1 = (-A * B + delta) / (A * A + 1);
-		float x2 = (-A * B - delta) / (A * A + 1);
-		float t1 = (x1 - i.x) / (i.tangent.x);
-		float t2 = (x2 - i.x) / (i.tangent.x);
-		float t = max(t1, t2);
-		x = i.x + i.tangent.x * t;
-		y = i.y + i.tangent.y * t;
-	}
-	while (x * sin(-currentAngle) - cos(-currentAngle) * y >= 0) {
-		currentAngle += angleStep;
+		return outTubeEdge();
 	}
 }
 
-/*
-条件1.已取得纤维路径 2.芯模以一定角速度旋转
-step1.通过对路径坐标矩阵旋转找到实际坐标和导数
-step2.通过射线相交找到对应的实际缠绕点和吐丝嘴坐标，转角
-step3.芯模旋转角度更新，转step1
-*/
-void CMfcogl1Doc::OnComputePayeyeTube() {
-	//初始化
-
-	auto tmpPoint = TubePointList->begin();
-	while (tmpPoint < TubePointList->end()) {
-		auto before = tmpPoint;
-		tmpPoint = updateTubeTrackListTime(tmpPoint);//计算本纤维带上的一个点，结果给TubeTrackListTime和TubePointListTime存数据
-		currentAngle += angleStep;
-	}
-
-	//测试输出
-	//glNewList(FIBER_TRACK_LIST, GL_COMPILE);
-
-	//GLfloat matAmb[4] = { 1.0F, 0.0F, 0.0F, 1.00F };
-	//GLfloat matDiff[4] = { 1.0F, 0.0F, 0.0F, 0.80F };
-	//GLfloat matSpec[4] = { 1.0F, 0.0F, 0.0F, 0.30F };
-	//GLfloat matShine = 60.00F;
-
-	//glMaterialfv(GL_FRONT, GL_AMBIENT, matAmb);
-	//glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiff);
-	//glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
-	//glMaterialf(GL_FRONT, GL_SHININESS, matShine);
-	//glPointSize(3);
-	glBegin(GL_LINES);
-	//把缠绕点序列 以射线形式画出来
-	for (auto i = TubePointListTime->begin(); i < TubePointListTime->end(); i++) {//从TubePointListTime取数据
-		float a[3] = { (*i).x,(*i).y,(*i).z };
-		float b[3] = { (*i).x + (*i).tangent.x * (*i).tPoint,(*i).y + (*i).tangent.y * (*i).tPoint,(*i).z + (*i).tangent.z * (*i).tPoint };
-		GLfloat matAmb[4] = { 0.0F, 1.0F, 0.8F, 1.00F };
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, matAmb);
-		glVertex3fv(a);
-		glVertex3fv(b);
-	}
-	glEnd();
-	glBegin(GL_LINE_STRIP);
-	//吐丝嘴轨道
-	for (auto j = TubeTrackListTime->begin(); j < TubeTrackListTime->end(); j++) {
-		float pointInPayeyeTrack[3] = { (model.a + model.r + payeye.pm_distance) * cos(-(*j).spindleAngle), (model.a + model.r + payeye.pm_distance) * sin(-(*j).spindleAngle),0 };
-		//float a[3] = { pointInPayeyeTrack[0],pointInPayeyeTrack[1],(*j).z -20 };
-		float b[3] = { pointInPayeyeTrack[0],pointInPayeyeTrack[1],(*j).z };
-		GLfloat matAmb[4] = { 1.0F, 0.0F, 0.0F, 1.00F };
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, matAmb);
-		//glVertex3fv(a);
-		glVertex3fv(b);
-	}
-	glEnd();
-	//glEndList();
-
-	CMfcogl1View* pView;
-	POSITION pos = GetFirstViewPosition();
-	pView = (CMfcogl1View*)GetNextView(pos);
-	pView->Invalidate(false);
-
-
+void CMfcogl1Doc::insertPoint(float *nextPoint ) {
+	glVertex3fv(nextPoint);
 }
 
-std::deque<TubePoint>::iterator CMfcogl1Doc::updateTubeTrackListTime(std::deque<TubePoint>::iterator currentPoint) {
-	std::deque<TubePoint>::iterator startPoint = currentPoint;
-	vector trackStart = { (model.a + model.r + payeye.pm_distance) * cos(-currentAngle), (model.a + model.r + payeye.pm_distance) * sin(-currentAngle),0 };//相对运动 所以是-
-	vector trackDirection = { 0,0,1 };
-	struct bestPoint bestPoint = { INFINITY };
-	float round = 4 * model.a + 4 * model.b + 2 * PI * model.r;
-	while (currentPoint < TubePointList->end() && abs((*currentPoint).z - (*startPoint).z) < (0.5 * round / (tan(model.angle)))) {
-		//track = y1 = d1*t1+p1  point = y2 = d2*t2+p2  
-		vector crossTrackPoint = { -(*currentPoint).tangent.y,(*currentPoint).tangent.x,0 };//track * point  d1 * d2
-		vector trackToPoint = { (*currentPoint).x - trackStart.x,(*currentPoint).y - trackStart.y ,(*currentPoint).z - trackStart.z };//point - track    p2 - p1
-		float lengthCrossTrackPoint = sqrt(crossTrackPoint.x * crossTrackPoint.x + crossTrackPoint.y * crossTrackPoint.y + crossTrackPoint.z * crossTrackPoint.z);
-		float distance = abs((trackToPoint.x * crossTrackPoint.x + trackToPoint.y * crossTrackPoint.y + trackToPoint.z * crossTrackPoint.z) / lengthCrossTrackPoint);
-		if (distance <= bestPoint.distance + 0.01) {
-			vector crossTrackToPointTrack = { trackToPoint.y,-trackToPoint.x,0 };//TrackToPoint * track
-			float tPoint = (crossTrackToPointTrack.x * crossTrackPoint.x + crossTrackToPointTrack.y * crossTrackPoint.y + crossTrackToPointTrack.z * crossTrackPoint.z) / (lengthCrossTrackPoint * lengthCrossTrackPoint);
-			if (tPoint > 0) {//else:虽然比inf小，但是因为射线方向不对，所以是不会更新的，所以最后输出的还是inf
-				bestPoint.pointNum = currentPoint;
-				(*bestPoint.pointNum).tPoint = tPoint;
-				bestPoint.distance = distance;
-				vector crossTrackToPointPoint = {
-					trackToPoint.y * (*currentPoint).tangent.z - trackToPoint.z * (*currentPoint).tangent.y,
-					trackToPoint.z * (*currentPoint).tangent.x - trackToPoint.x * (*currentPoint).tangent.z,
-					trackToPoint.x * (*currentPoint).tangent.y - trackToPoint.y * (*currentPoint).tangent.x
-				};
-				float tTrack = (crossTrackToPointPoint.x * crossTrackPoint.x + crossTrackToPointPoint.y * crossTrackPoint.y + crossTrackToPointPoint.z * crossTrackPoint.z) / (lengthCrossTrackPoint * lengthCrossTrackPoint);
-				bestPoint.track.x = model.a + model.r + payeye.pm_distance;
-				bestPoint.track.z = trackStart.z + tTrack;
-				bestPoint.track.spindleAngle = currentAngle;
-				bestPoint.track.swingAngle = atan((*currentPoint).tangent.y / (*currentPoint).tangent.z);
-			}
-		}
-		currentPoint++;
-	}
-	if (bestPoint.distance > 2) {
-		testStop = 0;
-	}
-	if (bestPoint.distance > 1) {
-		distanceE->push_back(bestPoint.distance);
-	}
-
-	TubeTrackListTime->push_back(bestPoint.track);
-	TubePointListTime->push_back(*bestPoint.pointNum);//iterator所指的tubepoint
-	return ++bestPoint.pointNum;
-
-
-}
 

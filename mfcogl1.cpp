@@ -121,7 +121,7 @@ BOOL CMfcogl1App::InitInstance()
 		return FALSE;
 
 	// The main window has been initialized, so show and update it.
-	//m_nCmdShow = SW_SHOWMAXIMIZED;
+	m_nCmdShow = SW_SHOWMAXIMIZED;
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();
 	//ShowWelcome();
