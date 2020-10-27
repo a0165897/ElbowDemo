@@ -533,7 +533,7 @@ void CMfcogl1Doc::OnSwitchComputeFiberPath() {
 }
 void CMfcogl1Doc::OnSwitchComputePayeye(){
 	if(m_isShowing == 1){//tube
-		OnComputePayeyeTube();
+		//OnComputePayeyeTube();
 	}
 	if(m_isShowing == 3){
 		debug_show("cylinder is doing...");
@@ -1086,111 +1086,111 @@ int CMfcogl1Doc::OnRenderCurvePart(int state, std::deque<struct tubePathCoord>* 
 	}
 }
 
-/*条件1.已取得纤维路径 2.芯模以一定角速度旋转
-step1.通过对路径坐标矩阵旋转找到实际坐标和导数
-step2.通过射线相交找到对应的实际缠绕点和吐丝嘴坐标，转角
-step3.芯模旋转角度更新，转step1
-*/
-void CMfcogl1Doc::OnComputePayeyeTube() {
-	//初始化
-
-	auto tmpPoint = TubePointList->begin();
-	while (tmpPoint < TubePointList->end()) {
-		auto before = tmpPoint;
-		tmpPoint = updateTubeTrackListTime(tmpPoint);//计算本纤维带上的一个点，结果给TubeTrackListTime和TubePointListTime存数据
-		currentAngle += angleStep;
-	}
-
-	//测试输出
-	glNewList(FIBER_TRACK_LIST, GL_COMPILE);
-
-	GLfloat matAmb[4] = { 1.0F, 0.0F, 0.0F, 1.00F };
-	GLfloat matDiff[4] = { 1.0F, 0.0F, 0.0F, 0.80F };
-	GLfloat matSpec[4] = { 1.0F, 0.0F, 0.0F, 0.30F };
-	GLfloat matShine = 60.00F;
-
-	glMaterialfv(GL_FRONT, GL_AMBIENT, matAmb);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiff);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
-	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
-	glPointSize(3);
-	glBegin(GL_LINES);
-	//把缠绕点序列 以射线形式画出来
-	for (auto i = TubePointListTime->begin(); i < TubePointListTime->end(); i++) {//从TubePointListTime取数据
-		float a[3] = { (*i).x,(*i).y,(*i).z };
-		float b[3] = { (*i).x + (*i).tangent.x * (*i).suspension,(*i).y + (*i).tangent.y * (*i).suspension,(*i).z + (*i).tangent.z * (*i).suspension };
-		GLfloat matAmb[4] = { 0.0F, 1.0F, 0.8F, 1.00F };
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, matAmb);
-		glVertex3fv(a);
-		glVertex3fv(b);
-	}
-	glEnd();
-	glBegin(GL_LINE_STRIP);
-	//吐丝嘴轨道
-	for (auto j = TubeTrackListTime->begin(); j < TubeTrackListTime->end(); j++) {
-		float pointInPayeyeTrack[3] = { (model.a + model.r + payeye.pm_distance) * cos(-(*j).spindleAngle), (model.a + model.r + payeye.pm_distance) * sin(-(*j).spindleAngle),0 };
-		//float a[3] = { pointInPayeyeTrack[0],pointInPayeyeTrack[1],(*j).z -20 };
-		float b[3] = { pointInPayeyeTrack[0],pointInPayeyeTrack[1],(*j).z };
-		GLfloat matAmb[4] = { 1.0F, 0.0F, 0.0F, 1.00F };
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, matAmb);
-		//glVertex3fv(a);
-		glVertex3fv(b);
-	}
-	glEnd();
-	glEndList();
-
-	CMfcogl1View* pView;
-	POSITION pos = GetFirstViewPosition();
-	pView = (CMfcogl1View*)GetNextView(pos);
-	pView->Invalidate(false);
-
-
-}
-
-std::deque<tubePathCoord>::iterator CMfcogl1Doc::updateTubeTrackListTime(std::deque<tubePathCoord>::iterator currentPoint) {
-	std::deque<tubePathCoord>::iterator startPoint = currentPoint;
-	float3 trackStart = { (model.a + model.r + payeye.pm_distance) * cos(-currentAngle), (model.a + model.r + payeye.pm_distance) * sin(-currentAngle),0 };//相对运动 所以是-
-	float3 trackDirection = { 0,0,1 };
-	struct bestPoint bestPoint = { INFINITY };
-	float round = 4 * model.a + 4 * model.b + 2 * PI * model.r;
-	while (currentPoint < TubePointList->end() && abs((*currentPoint).z - (*startPoint).z) < (0.5 * round / (tan(model.angle)))) {
-		//track = y1 = d1*t1+p1  point = y2 = d2*t2+p2  
-		float3 crossTrackPoint = { -(*currentPoint).tangent.y,(*currentPoint).tangent.x,0 };//track * point  d1 * d2
-		float3 trackToPoint = { (*currentPoint).x - trackStart.x,(*currentPoint).y - trackStart.y ,(*currentPoint).z - trackStart.z };//point - track    p2 - p1
-		float lengthCrossTrackPoint = sqrt(crossTrackPoint.x * crossTrackPoint.x + crossTrackPoint.y * crossTrackPoint.y + crossTrackPoint.z * crossTrackPoint.z);
-		float distance = abs((trackToPoint.x * crossTrackPoint.x + trackToPoint.y * crossTrackPoint.y + trackToPoint.z * crossTrackPoint.z) / lengthCrossTrackPoint);
-		if (distance <= bestPoint.distance + 0.01) {
-			float3 crossTrackToPointTrack = { trackToPoint.y,-trackToPoint.x,0 };//TrackToPoint * track
-			float suspension = (crossTrackToPointTrack.x * crossTrackPoint.x + crossTrackToPointTrack.y * crossTrackPoint.y + crossTrackToPointTrack.z * crossTrackPoint.z) / (lengthCrossTrackPoint * lengthCrossTrackPoint);
-			if (suspension > 0) {//else:虽然比inf小，但是因为射线方向不对，所以是不会更新的，所以最后输出的还是inf
-				bestPoint.pointNum = currentPoint;
-				(*bestPoint.pointNum).suspension = suspension;
-				bestPoint.distance = distance;
-				float3 crossTrackToPointPoint = {
-					trackToPoint.y * (*currentPoint).tangent.z - trackToPoint.z * (*currentPoint).tangent.y,
-					trackToPoint.z * (*currentPoint).tangent.x - trackToPoint.x * (*currentPoint).tangent.z,
-					trackToPoint.x * (*currentPoint).tangent.y - trackToPoint.y * (*currentPoint).tangent.x
-				};
-				float tTrack = (crossTrackToPointPoint.x * crossTrackPoint.x + crossTrackToPointPoint.y * crossTrackPoint.y + crossTrackToPointPoint.z * crossTrackPoint.z) / (lengthCrossTrackPoint * lengthCrossTrackPoint);
-				bestPoint.track.x = model.a + model.r + payeye.pm_distance;
-				bestPoint.track.z = trackStart.z + tTrack;
-				bestPoint.track.spindleAngle = currentAngle;
-				bestPoint.track.swingAngle = atan((*currentPoint).tangent.y / (*currentPoint).tangent.z);
-			}
-		}
-		currentPoint++;
-	}
-	if (bestPoint.distance > 2) {
-		testStop = 0;
-	}
-	if (bestPoint.distance > 1) {
-		distanceE->push_back(bestPoint.distance);
-	}
-
-	TubeTrackListTime->push_back(bestPoint.track);
-	TubePointListTime->push_back(*bestPoint.pointNum);//iterator所指的tubepoint
-	return ++bestPoint.pointNum;
-
-
-}
+///*条件1.已取得纤维路径 2.芯模以一定角速度旋转
+//step1.通过对路径坐标矩阵旋转找到实际坐标和导数
+//step2.通过射线相交找到对应的实际缠绕点和吐丝嘴坐标，转角
+//step3.芯模旋转角度更新，转step1
+//*/
+//void CMfcogl1Doc::OnComputePayeyeTube() {
+//	//初始化
+//
+//	auto tmpPoint = TubePointList->begin();
+//	while (tmpPoint < TubePointList->end()) {
+//		auto before = tmpPoint;
+//		tmpPoint = updateTubeTrackListTime(tmpPoint);//计算本纤维带上的一个点，结果给TubeTrackListTime和TubePointListTime存数据
+//		currentAngle += angleStep;
+//	}
+//
+//	//测试输出
+//	glNewList(FIBER_TRACK_LIST, GL_COMPILE);
+//
+//	GLfloat matAmb[4] = { 1.0F, 0.0F, 0.0F, 1.00F };
+//	GLfloat matDiff[4] = { 1.0F, 0.0F, 0.0F, 0.80F };
+//	GLfloat matSpec[4] = { 1.0F, 0.0F, 0.0F, 0.30F };
+//	GLfloat matShine = 60.00F;
+//
+//	glMaterialfv(GL_FRONT, GL_AMBIENT, matAmb);
+//	glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiff);
+//	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
+//	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
+//	glPointSize(3);
+//	glBegin(GL_LINES);
+//	//把缠绕点序列 以射线形式画出来
+//	for (auto i = TubePointListTime->begin(); i < TubePointListTime->end(); i++) {//从TubePointListTime取数据
+//		float a[3] = { (*i).x,(*i).y,(*i).z };
+//		float b[3] = { (*i).x + (*i).tangent.x * (*i).suspension,(*i).y + (*i).tangent.y * (*i).suspension,(*i).z + (*i).tangent.z * (*i).suspension };
+//		GLfloat matAmb[4] = { 0.0F, 1.0F, 0.8F, 1.00F };
+//		glMaterialfv(GL_FRONT, GL_DIFFUSE, matAmb);
+//		glVertex3fv(a);
+//		glVertex3fv(b);
+//	}
+//	glEnd();
+//	glBegin(GL_LINE_STRIP);
+//	//吐丝嘴轨道
+//	for (auto j = TubeTrackListTime->begin(); j < TubeTrackListTime->end(); j++) {
+//		float pointInPayeyeTrack[3] = { (model.a + model.r + payeye.pm_distance) * cos(-(*j).spindleAngle), (model.a + model.r + payeye.pm_distance) * sin(-(*j).spindleAngle),0 };
+//		//float a[3] = { pointInPayeyeTrack[0],pointInPayeyeTrack[1],(*j).z -20 };
+//		float b[3] = { pointInPayeyeTrack[0],pointInPayeyeTrack[1],(*j).z };
+//		GLfloat matAmb[4] = { 1.0F, 0.0F, 0.0F, 1.00F };
+//		glMaterialfv(GL_FRONT, GL_DIFFUSE, matAmb);
+//		//glVertex3fv(a);
+//		glVertex3fv(b);
+//	}
+//	glEnd();
+//	glEndList();
+//
+//	CMfcogl1View* pView;
+//	POSITION pos = GetFirstViewPosition();
+//	pView = (CMfcogl1View*)GetNextView(pos);
+//	pView->Invalidate(false);
+//
+//
+//}
+//
+//std::deque<tubePathCoord>::iterator CMfcogl1Doc::updateTubeTrackListTime(std::deque<tubePathCoord>::iterator currentPoint) {
+//	std::deque<tubePathCoord>::iterator startPoint = currentPoint;
+//	float3 trackStart = { (model.a + model.r + payeye.pm_distance) * cos(-currentAngle), (model.a + model.r + payeye.pm_distance) * sin(-currentAngle),0 };//相对运动 所以是-
+//	float3 trackDirection = { 0,0,1 };
+//	struct bestPoint bestPoint = { INFINITY };
+//	float round = 4 * model.a + 4 * model.b + 2 * PI * model.r;
+//	while (currentPoint < TubePointList->end() && abs((*currentPoint).z - (*startPoint).z) < (0.5 * round / (tan(model.angle)))) {
+//		//track = y1 = d1*t1+p1  point = y2 = d2*t2+p2  
+//		float3 crossTrackPoint = { -(*currentPoint).tangent.y,(*currentPoint).tangent.x,0 };//track * point  d1 * d2
+//		float3 trackToPoint = { (*currentPoint).x - trackStart.x,(*currentPoint).y - trackStart.y ,(*currentPoint).z - trackStart.z };//point - track    p2 - p1
+//		float lengthCrossTrackPoint = sqrt(crossTrackPoint.x * crossTrackPoint.x + crossTrackPoint.y * crossTrackPoint.y + crossTrackPoint.z * crossTrackPoint.z);
+//		float distance = abs((trackToPoint.x * crossTrackPoint.x + trackToPoint.y * crossTrackPoint.y + trackToPoint.z * crossTrackPoint.z) / lengthCrossTrackPoint);
+//		if (distance <= bestPoint.distance + 0.01) {
+//			float3 crossTrackToPointTrack = { trackToPoint.y,-trackToPoint.x,0 };//TrackToPoint * track
+//			float suspension = (crossTrackToPointTrack.x * crossTrackPoint.x + crossTrackToPointTrack.y * crossTrackPoint.y + crossTrackToPointTrack.z * crossTrackPoint.z) / (lengthCrossTrackPoint * lengthCrossTrackPoint);
+//			if (suspension > 0) {//else:虽然比inf小，但是因为射线方向不对，所以是不会更新的，所以最后输出的还是inf
+//				bestPoint.pointNum = currentPoint;
+//				(*bestPoint.pointNum).suspension = suspension;
+//				bestPoint.distance = distance;
+//				float3 crossTrackToPointPoint = {
+//					trackToPoint.y * (*currentPoint).tangent.z - trackToPoint.z * (*currentPoint).tangent.y,
+//					trackToPoint.z * (*currentPoint).tangent.x - trackToPoint.x * (*currentPoint).tangent.z,
+//					trackToPoint.x * (*currentPoint).tangent.y - trackToPoint.y * (*currentPoint).tangent.x
+//				};
+//				float tTrack = (crossTrackToPointPoint.x * crossTrackPoint.x + crossTrackToPointPoint.y * crossTrackPoint.y + crossTrackToPointPoint.z * crossTrackPoint.z) / (lengthCrossTrackPoint * lengthCrossTrackPoint);
+//				bestPoint.track.x = model.a + model.r + payeye.pm_distance;
+//				bestPoint.track.z = trackStart.z + tTrack;
+//				bestPoint.track.spindleAngle = currentAngle;
+//				bestPoint.track.swingAngle = atan((*currentPoint).tangent.y / (*currentPoint).tangent.z);
+//			}
+//		}
+//		currentPoint++;
+//	}
+//	if (bestPoint.distance > 2) {
+//		testStop = 0;
+//	}
+//	if (bestPoint.distance > 1) {
+//		distanceE->push_back(bestPoint.distance);
+//	}
+//
+//	TubeTrackListTime->push_back(bestPoint.track);
+//	TubePointListTime->push_back(*bestPoint.pointNum);//iterator所指的tubepoint
+//	return ++bestPoint.pointNum;
+//
+//
+//}
 

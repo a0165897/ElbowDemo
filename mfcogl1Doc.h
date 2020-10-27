@@ -97,6 +97,8 @@ private:
 public:
 	/*added by LMK*/
 	int testStop = 1;
+	int M0;
+	float interval;
 	int jumpNum;//跳跃数 从对话框中算出
 	int cutNum;//切点数 意思是 第一条纱经过几个来回后到达相邻位置 应该和跳跃数相对 如 5等分 1 3 5 2 4 1 .... 切点数为3 跳跃数为2 在一个切分中无限循环 每次从出去点+cutNum再出发
 	model model;
