@@ -151,4 +151,7 @@
     </CustomBuild>
     <CustomBuild Include="mfcogl1.reg" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ribbon1.mfcribbon-ms" />
+  </ItemGroup>
 </Project>
