@@ -60,6 +60,9 @@
     <ClCompile Include="CreateNewCylinderDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DlgFiberPathControlsCylinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="mfcogl1.rc">
@@ -116,6 +119,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CreateNewCylinderDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgFiberPathControlsCylinder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

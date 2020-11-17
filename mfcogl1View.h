@@ -53,6 +53,7 @@ public:
 public:
 	bool m_cview_disable_mandrel_display;
 	bool m_cview_enable_tape_display;
+	bool m_cview_enable_track_display;
 
 	int DisplayPayeyeProcess();
 	int DisplaytheWindingProcess();
@@ -118,7 +119,6 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
-	
 	unsigned short step_number,scircuit;
 	unsigned long m_payeye_to;
 	bool m_bCanDisplayPayeye,m_bCanDisplayPath;
@@ -126,7 +126,7 @@ private:
 	CMfcogl1Doc *pDoc;
 
 
-	bool m_cview_display_winding_in_sequence,m_bHaveCylinder;	
+	bool m_cview_display_winding_in_sequence;	
 	float m_view_rotation_speed;
 	CPoint m_mouse_down_point;
 	BOOL m_elbow_updated;
@@ -153,6 +153,8 @@ private:
 	GLint   m_elbow_cnt;
 public:
 	/*added by LMK*/
+	float windingAngle;
+
 	//dialog(IDC_TUBE_WIDTH/2 - RADIUS)->Class CreateNewTubeDlg(m_dlg_tube_a)->view(m_view_tube_a)
 	GLfloat m_view_tube_a;
 	GLfloat m_view_tube_b;

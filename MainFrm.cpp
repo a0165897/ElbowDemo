@@ -76,10 +76,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	RECT arect = { 0,0,0,0 };
 	m_wndProgress.Create(WS_CHILD|PBS_SMOOTH, arect, &m_wndStatusBar, ID_CIRCUIT_PROGRESS);
 	m_wndStatusBar.SetPaneInfo(1, ID_CIRCUIT_PROGRESS, SBPS_NOBORDERS, 100);
+	m_wndStatusBar.SetPaneInfo(2, ID_CIRCUIT_NUMBER, SBPS_NOBORDERS, 300);
 	m_wndProgress.ShowWindow(SW_HIDE);
 	m_wndProgress.SetRange(0, 100);
 	m_wndProgress.SetPos(0);
-	m_wndStatusBar.SetPaneInfo(2, ID_CIRCUIT_NUMBER, SBPS_NOBORDERS, 100);
 	return 0;
 }
 

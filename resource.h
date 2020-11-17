@@ -24,6 +24,7 @@
 #define IDD_FIBER_PATH_CONTROL_TUBE     147
 #define IDD_CREATE_NEW_CYLINDER         149
 #define IDR_RIBBON1                     153
+#define IDD_FIBER_PATH_CONTROL_CYLINDER 154
 #define IDC_SPAN_ANGLE                  1000
 #define IDC_SWEEP_RADIUS                1001
 #define IDC_PIPE_RADIUS                 1002
@@ -78,9 +79,13 @@
 #define IDC_TUBE_CUT_NUM                1042
 #define IDC_TUBE_BAND_THICKNESS         1043
 #define IDC_TUBE_MANDREL_SPEED          1044
+#define IDC_CYLINDER_WINDING_ANGLE      1044
 #define IDC_TUBE_MANDREL_PAYEYE_DISTANCE 1045
+#define IDC_CYLINDER_BAND_WIDTH         1045
 #define IDC_TUBE_MANDREL_PAYEYE_LEFT_DISTANCE 1046
+#define IDC_CYLINDER_BAND_THICKNESS     1046
 #define IDC_TUBE_MANDREL_REDUNDANCY     1047
+#define IDC_CYLINDER_CUT_NUM            1047
 #define IDM_ROTATE                      32771
 #define IDM_ROTATE_WITH_X               32772
 #define IDM_ROTATE_WITH_Y               32773
@@ -132,9 +137,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        154
+#define _APS_NEXT_RESOURCE_VALUE        156
 #define _APS_NEXT_COMMAND_VALUE         32846
-#define _APS_NEXT_CONTROL_VALUE         1042
+#define _APS_NEXT_CONTROL_VALUE         1048
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

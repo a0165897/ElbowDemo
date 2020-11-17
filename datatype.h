@@ -4,10 +4,10 @@
 
 struct PathPointStructure //精度高,可用于计算过程
 {
-	double theta;      //张角绝对坐标
-	double phi;   //中心角绝对坐标
-	double alpha;   //缠绕有向角
-    //double arc_length;      //弧长绝对坐标
+	float theta;      //张角绝对坐标
+	float phi;   //中心角绝对坐标
+	float alpha;   //缠绕有向角
+    //float arc_length;      //弧长绝对坐标
 };
 
 struct fPathDataStructure  //降低精度,float 足以
@@ -15,7 +15,7 @@ struct fPathDataStructure  //降低精度,float 足以
 	float theta;      //张角绝对坐标
 	float phi;        //中心角绝对坐标
 	float alpha;     //缠绕有向角
-    //double arc_length;      //弧长绝对坐标
+    //float arc_length;      //弧长绝对坐标
 };
 
 enum SearchDirection

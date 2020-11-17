@@ -140,6 +140,7 @@
     <ClCompile Include="CreateNewCylinderDlg.cpp" />
     <ClCompile Include="CreateNewTubeDlg.cpp" />
     <ClCompile Include="DlgFiberPathControls.cpp" />
+    <ClCompile Include="DlgFiberPathControlsCylinder.cpp" />
     <ClCompile Include="DlgFiberPathControlsTube.cpp" />
     <ClCompile Include="HintDialog.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="CreateNewTubeDlg.h" />
     <ClInclude Include="datatype.h" />
     <ClInclude Include="DlgFiberPathControls.h" />
+    <ClInclude Include="DlgFiberPathControlsCylinder.h" />
     <ClInclude Include="DlgFiberPathControlsTube.h" />
     <ClInclude Include="HintDialog.h" />
     <ClInclude Include="MainFrm.h" />
