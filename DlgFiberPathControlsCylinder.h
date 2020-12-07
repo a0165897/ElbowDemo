@@ -17,8 +17,11 @@ public:
 	float m_dlg_cylinder_band_width;
 	float m_dlg_cylinder_band_thickness;
 	float m_dlg_cylinder_cut_num;
+	float m_dlg_cylinder_slippage_coefficient;
+	CString m_dlg_cylinder_winding_algorithm;
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	virtual BOOL OnInitDialog();
 
+	CComboBox m_combo;
 };

@@ -86,6 +86,8 @@
 #define IDC_CYLINDER_BAND_THICKNESS     1046
 #define IDC_TUBE_MANDREL_REDUNDANCY     1047
 #define IDC_CYLINDER_CUT_NUM            1047
+#define IDC_CYLINDER_WINDING_ALGORITHM  1048
+#define IDC_CYLINDER_SLIPPAGE_COEFFICIENT 1049
 #define IDM_ROTATE                      32771
 #define IDM_ROTATE_WITH_X               32772
 #define IDM_ROTATE_WITH_Y               32773
@@ -137,9 +139,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        156
+#define _APS_NEXT_RESOURCE_VALUE        157
 #define _APS_NEXT_COMMAND_VALUE         32846
-#define _APS_NEXT_CONTROL_VALUE         1048
+#define _APS_NEXT_CONTROL_VALUE         1050
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

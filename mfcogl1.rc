@@ -495,9 +495,14 @@ BEGIN
     EDITTEXT        IDC_CYLINDER_BAND_WIDTH,188,49,46,14,ES_AUTOHSCROLL
     LTEXT           "[切点数]",IDC_STATIC,38,86,35,8
     EDITTEXT        IDC_CYLINDER_CUT_NUM,188,84,46,14,ES_AUTOHSCROLL
-    GROUPBOX        "纤维参数",IDC_STATIC,24,16,223,97
+    GROUPBOX        "纤维参数",IDC_STATIC,24,16,223,110
     LTEXT           "[纤维厚度][mm] ",IDC_STATIC,38,69,65,8
     EDITTEXT        IDC_CYLINDER_BAND_THICKNESS,188,67,46,14,ES_AUTOHSCROLL
+    LTEXT           "[缠绕算法]",IDC_STATIC,38,103,51,8
+    COMBOBOX        IDC_CYLINDER_WINDING_ALGORITHM,166,104,69,68,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "芯模参数",IDC_STATIC,24,127,223,110
+    LTEXT           "[打滑系数][μ] ",IDC_STATIC,37,147,67,8
+    EDITTEXT        IDC_CYLINDER_SLIPPAGE_COEFFICIENT,187,144,46,14,ES_AUTOHSCROLL
 END
 
 
@@ -689,6 +694,23 @@ END
 //
 
 IDR_RIBBON1             RT_RIBBON_XML           "res\\ribbon1.mfcribbon-ms"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_FIBER_PATH_CONTROL_CYLINDER DLGINIT
+BEGIN
+    IDC_CYLINDER_WINDING_ALGORITHM, 0x403, 9, 0
+0x4547, 0x444f, 0x5345, 0x4349, "\000" 
+    IDC_CYLINDER_WINDING_ALGORITHM, 0x403, 12, 0
+0x4946, 0x4558, 0x5f44, 0x4e41, 0x4c47, 0x0045, 
+    IDC_CYLINDER_WINDING_ALGORITHM, 0x403, 13, 0
+0x4f4e, 0x5f4e, 0x4547, 0x444f, 0x5345, 0x4349, "\000" 
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////

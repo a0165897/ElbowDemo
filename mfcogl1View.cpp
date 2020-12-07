@@ -687,14 +687,16 @@ int CMfcogl1View::DisplayPayeyeProcess()
 				break;
 			}
 		}
-		if (track!=(*line)->begin()) {
-			track--;
-		}
-		else {
-			line--;
-			track = (*line)->end() - 1;
-		}
-		astring.Format("z:%.1f x:%.1f 芯模:%.1f°吐丝嘴:%.1f°", track->z, track->x, 180.0/PI*track->spindleAngle, 180.0 / PI * track->swingAngle);
+		//if (track != (*line)->end()) {//todo:bug 到头会出bug
+		//	if (track != (*line)->begin()) {
+		//		track--;
+		//	}
+		//	else {
+		//		line--;
+		//		track = (*line)->end() - 1;
+		//	}
+		//	astring.Format("z:%.1f x:%.1f 芯模:%.1f°吐丝嘴:%.1f°", track->z, track->x, 180.0 / PI * track->spindleAngle, 180.0 / PI * track->swingAngle);
+		//}
 	}
 	return 0;
 }

@@ -32,7 +32,9 @@ struct cylinderModel {
 	float left_radius;
 	float right_length;
 	float right_radius;
-
+	float slippage_coefficient;
+	float left_slippage_point;
+	float right_slippage_point;
 	double angle;//缠绕角的弧度(与旋转轴夹角)
 	double width;//纤维带宽度
 	double round;//周长
@@ -99,6 +101,7 @@ public:
 	float interval;
 	int jumpNum;//跳跃数 从对话框中算出
 	int cutNum;//切点数 意思是 第一条纱经过几个来回后到达相邻位置 应该和跳跃数相对 如 5等分 1 3 5 2 4 1 .... 切点数为3 跳跃数为2 在一个切分中无限循环 每次从出去点+cutNum再出发
+	CString cylinderWindingAlgorithm;
 	tubeModel tubeModel;
 	payeye payeye;
 	tubePathPosition currentPosition;
@@ -106,6 +109,7 @@ public:
 	float windingPathStep;
 	float currentAngle,angleStep;
 	std::deque<struct tubePathPosition> TubeStartList;//聚集全部两端的起点
+	std::deque<struct tubePathPosition> TubeEndList;//从一个端点链接到另一条的起点，为此需要聚集一端的顶点集合
 	int TubeCurrentStart[2];//为计算下一跳纤维起点的编号，分别记录两端当前纤维起点的编号
 	/*
 	<deque>纤维路径序列:
@@ -136,13 +140,11 @@ public:
 	unsigned long m_WindingCount[6];
 	unsigned short m_numlayer;
 	float m_FilamentWidth,cylinder_radius[6];
-
 	bool m_bFiberPathComplete,m_bPayeyeComplete,m_bUseLayer;
 // Implementation
 public:
 	void ResetWndDesign();
 	bool IsEachPrime(int m1,int m2);
-
 	virtual ~CMfcogl1Doc();
 
 	/*added by LMK*/
@@ -153,7 +155,11 @@ public:
 	void OnSwitchComputePayeye();
 	//cylidner纤维路径计算
 	void CMfcogl1Doc::OnRenderRightEllipsoid(std::deque <struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint);
+	void CMfcogl1Doc::OnRenderRightEllipsoidFixedAngle(std::deque <struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint);
+	void CMfcogl1Doc::OnRenderRightEllipsoidNonGeodesic(std::deque<struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint);
 	void CMfcogl1Doc::OnRenderLeftEllipsoid(std::deque<struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint);
+	void CMfcogl1Doc::OnRenderLeftEllipsoidFixedAngle(std::deque<struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint);
+	void CMfcogl1Doc::OnRenderLeftEllipsoidNonGeodesic(std::deque<struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint);
 	void CMfcogl1Doc::OnRenderMiddleCylinder(std::deque<struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint);
 	//tube纤维路径计算
 	afx_msg void OnRenderSinglePath(std::deque<struct tubePathCoord>* singlePathList);
@@ -164,8 +170,8 @@ public:
 	inline int outTubeEdge();
 	//tube机器路径计算
 	void CMfcogl1Doc::pushTubePathCoord(const float* nextPoint, const float normal_radian, const int direction, std::deque<struct tubePathCoord>* singlePathList);
-	afx_msg int OnGenerateTubeStartList( std::deque<struct tubePathPosition>& pque);
-	afx_msg void OnGeneratePosition(std::deque<struct tubePathPosition>& pque);
+	afx_msg int OnGenerateTubeEdgeList(std::deque<struct tubePathPosition>& TubeList, float interval, int side);
+	afx_msg void OnGeneratePosition(std::deque<struct tubePathPosition>& TubeStartList, std::deque<struct tubePathCoord>* singlePathList);
 	afx_msg void CMfcogl1Doc::computeTubeTrack(std::deque<struct tubePathCoord>::iterator currentTubePoint, track& tempTubeTrack);
 	void CMfcogl1Doc::vectorRotateAroundZ(const double3& currentVector, const float& angle, double3& rotatedVector);
 	//debug
@@ -179,6 +185,9 @@ public:
 			strMsg.Format("Value:%f\n", x);
 		}
 		else if (typeid(x) == typeid(const char *)) {
+			strMsg.Format("Value:%s\n", x);
+		}
+		else if (typeid(x) == typeid(const CString)) {
 			strMsg.Format("Value:%s\n", x);
 		}
 		else {

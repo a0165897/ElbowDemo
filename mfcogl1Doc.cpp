@@ -529,7 +529,7 @@ void CMfcogl1Doc::CleanTubeMemory() {
 }
 
 //生成起始点列表 在两个头上各绕一圈
-int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& TubeStartList) {
+int CMfcogl1Doc::OnGenerateTubeEdgeList(std::deque<struct tubePathPosition>& TubeList,float interval,int side) {
 	float halfInterval = interval / 2;
 	int i = 0;
 	struct tubePathPosition p;
@@ -539,10 +539,12 @@ int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& Tu
 		p.z = 0;
 		p.index = i;
 		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 	for (; i * interval < tubeModel.a + PI * tubeModel.r / 2; i++) {
 		p.x = tubeModel.a + tubeModel.r * sin((i * interval - tubeModel.a) / tubeModel.r);
@@ -550,10 +552,12 @@ int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& Tu
 		p.z = 0;
 		p.index = i;
 		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 	for (; i * interval < tubeModel.a + PI * tubeModel.r / 2 + 2 * tubeModel.b; i++) {
 		p.x = tubeModel.a + tubeModel.r;
@@ -561,10 +565,12 @@ int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& Tu
 		p.z = 0;
 		p.index = i;
 		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 	for (; i * interval < tubeModel.a + PI * tubeModel.r + 2 * tubeModel.b; i++) {
 		p.x = tubeModel.a + tubeModel.r * cos((i * interval - (tubeModel.a + PI * tubeModel.r / 2 + 2 * tubeModel.b)) / tubeModel.r);
@@ -572,21 +578,25 @@ int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& Tu
 		p.z = 0;
 		p.index = i;
 		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 	for (; i * interval < 3 * tubeModel.a + PI * tubeModel.r + 2 * tubeModel.b; i++) {
 		p.x = 2 * tubeModel.a - i * interval + PI * tubeModel.r + 2 * tubeModel.b;
 		p.y = -tubeModel.b - tubeModel.r;
 		p.z = 0;
 		p.index = i;
-		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		p.direction = 1; 
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 	for (; i * interval < 3 * tubeModel.a + 1.5 * PI * tubeModel.r + 2 * tubeModel.b; i++) {
 		p.x = -tubeModel.a - tubeModel.r * sin((i * interval - (3 * tubeModel.a + PI * tubeModel.r + 2 * tubeModel.b)) / tubeModel.r);
@@ -594,10 +604,12 @@ int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& Tu
 		p.z = 0;
 		p.index = i;
 		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 	for (; i * interval < 3 * tubeModel.a + 1.5 * PI * tubeModel.r + 4 * tubeModel.b; i++) {
 		p.x = -tubeModel.a - tubeModel.r;
@@ -605,10 +617,12 @@ int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& Tu
 		p.z = 0;
 		p.index = i;
 		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 	for (; i * interval < 3 * tubeModel.a + 2 * PI * tubeModel.r + 4 * tubeModel.b; i++) {
 		p.x = -tubeModel.a - tubeModel.r * cos((i * interval - (3 * tubeModel.a + 1.5 * PI * tubeModel.r + 4 * tubeModel.b)) / tubeModel.r);
@@ -616,10 +630,12 @@ int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& Tu
 		p.z = 0;
 		p.index = i;
 		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 	for (; i * interval < 4 * tubeModel.a + 2 * PI * tubeModel.r + 4 * tubeModel.b - tiny; i++) {
 		p.x = i * interval - (4 * tubeModel.a + 2 * PI * tubeModel.r + 4 * tubeModel.b);
@@ -627,13 +643,15 @@ int CMfcogl1Doc::OnGenerateTubeStartList(std::deque<struct tubePathPosition>& Tu
 		p.z = 0;
 		p.index = i;
 		p.direction = 1;
-		TubeStartList.push_back(p);
-		p.z = tubeModel.length;
-		p.direction = -1;
-		TubeStartList.push_back(p);
+		TubeList.push_back(p);
+		if (side == 2) {
+			p.z = tubeModel.length;
+			p.direction = -1;
+			TubeList.push_back(p);
+		}
 	}
 
-	return TubeStartList.size();
+	return TubeList.size();
 }
 
 //方管纤维路径的计算
@@ -658,22 +676,69 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 		glMaterialf(GL_FRONT, GL_SHININESS, matShine);
 
 		//生成所有路径的起点
-		int totalNum = OnGenerateTubeStartList(TubeStartList);
+		int totalNum = OnGenerateTubeEdgeList(TubeStartList,interval,2);
+		OnGenerateTubeEdgeList(TubeEndList, windingPathStep,1);
 		//计算循环
 		while (TubeStartList.size() != 0  ) {
 			std::deque<struct tubePathCoord>* currentPathList = new std::deque<struct tubePathCoord>;
 			TubePointList->push_back(currentPathList);
-			OnGeneratePosition(TubeStartList);
+			OnGeneratePosition(TubeStartList,currentPathList);
 			OnRenderSinglePath(currentPathList);//计算本纤维路径的所有顶点位置并输入glList和TubePointList
 		}
 		glEndList();
 
-		//统计总的坐标数
-		int size=0;
-		for (auto i = TubePointList->begin(); i < TubePointList->end(); i++) {
-			size += (*i)->size();
+		//插入两条纤维路径的连接段
+		for (auto list = TubePointList->begin(); list < TubePointList->end()-1;list++ ) {
+			std::deque<struct tubePathCoord>* currentPathList = new std::deque<struct tubePathCoord>;
+			tubePathCoord begin = *(*list)->rbegin();
+			tubePathCoord end = *(*(list+1))->begin();
+			std::deque<tubePathPosition>::iterator closest_begin;
+			std::deque<tubePathPosition>::iterator closest_end;
+			float dis;
+			dis= INFINITY;
+			for (auto j = TubeEndList.begin(); j < TubeEndList.end(); j++) {
+				float tmp_dis = (begin.x - j->x) * (begin.x - j->x) + (begin.y - j->y) * (begin.y - j->y);
+				if (tmp_dis < dis) {
+					dis = tmp_dis;
+					closest_begin = j;
+				}
+			}
+			dis = INFINITY;
+			for (auto j = TubeEndList.begin(); j < TubeEndList.end(); j++) {
+				float tmp_dis = (end.x - j->x) * (end.x - j->x) + (end.y - j->y) * (end.y - j->y);
+				if (tmp_dis < dis) {
+					dis = tmp_dis;
+					closest_end = j;
+				}
+			}
+			if (closest_begin < closest_end) {
+				for (auto i = closest_begin; i <= closest_end; i++) {
+					tubePathCoord tmp = begin;
+					tmp.x = (*i).x;
+					tmp.y = (*i).y;
+					currentPathList->push_back(tmp);
+				}
+			}
+			else {
+				for (auto i = closest_begin; i <TubeEndList.end(); i++) {
+					tubePathCoord tmp = begin;
+					tmp.x = (*i).x;
+					tmp.y = (*i).y;
+					currentPathList->push_back(tmp);
+				}
+				for (auto i = TubeEndList.begin(); i <= closest_end; i++) {
+					tubePathCoord tmp = begin;
+					tmp.x = (*i).x;
+					tmp.y = (*i).y;
+					currentPathList->push_back(tmp);
+				}
+			}
+			list = TubePointList->insert(list+1, currentPathList);
 		}
-		m_WindingCount[0] = size;
+
+		//统计总的坐标数
+		m_WindingCount[0] = 0;
+		for (auto i = TubePointList->begin(); i < TubePointList->end(); i++) { m_WindingCount[0] += (*i)->size(); }
 		AfxMessageBox("纤维路径计算完毕\ntube Track Computation Finished.");
 		m_bFiberPathComplete = true;
 		CMfcogl1View* pView;
@@ -681,6 +746,7 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 		pView = (CMfcogl1View*)GetNextView(pos);
 		pView->m_cview_enable_tape_display = true;
 		pView->Invalidate(false);
+
 	}
 	else{
 		AfxMessageBox(_T("请先设置纤维参数\nPlease setup parameter first."));
@@ -688,7 +754,7 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 }
 
 //根据当前位置和跳跃数算出本条路径的起点
-void CMfcogl1Doc::OnGeneratePosition(std::deque<struct tubePathPosition>&TubeStartList) {
+void CMfcogl1Doc::OnGeneratePosition(std::deque<struct tubePathPosition>&TubeStartList, std::deque<struct tubePathCoord>* singlePathList) {
 
 	double3 trackStart = { cos(-currentAngle), sin(-currentAngle),0 };
 
@@ -710,14 +776,8 @@ void CMfcogl1Doc::OnGeneratePosition(std::deque<struct tubePathPosition>&TubeSta
 			STemp.Format("错误：OnGeneratePosition 找不到合适的节点 ");
 			AfxMessageBox(STemp);
 		}
+
 	}
-
-	track lastTrack;
-	lastTrack.x = tubeModel.a + tubeModel.r + payeye.pm_distance;
-	lastTrack.z = (*tmpPosition).direction > 0 ? 0 : tubeModel.length;
-	lastTrack.spindleAngle = currentAngle + acos(angle);
-	lastTrack.swingAngle = (*tmpPosition).direction > 0 ? -PI / 2 : PI / 2;
-
 
 	currentPosition = *tmpPosition;
 
@@ -1077,14 +1137,16 @@ void CMfcogl1Doc::vectorRotateAroundZ(const double3& currentVector,const float& 
 	rotatedVector.z = currentVector.z;
 }
 
+//接受压力容器的纤维路径参数
 void CMfcogl1Doc::OnOpenFiberPathControlCylinderParametersDlg() {
 	CDlgFiberPathControlsCylinder fpCylinderDlg;
 	if (IDOK == fpCylinderDlg.DoModal()) {
 		ResetWndDesign();
 		cylinderModel.angle = fpCylinderDlg.m_dlg_cylinder_winding_angle * PI / 180.0;
 		cylinderModel.width = fpCylinderDlg.m_dlg_cylinder_band_width;
+		cylinderModel.slippage_coefficient = fpCylinderDlg.m_dlg_cylinder_slippage_coefficient;
 		cutNum = fpCylinderDlg.m_dlg_cylinder_cut_num;
-
+		cylinderWindingAlgorithm = fpCylinderDlg.m_dlg_cylinder_winding_algorithm;
 		m_bCanComputing = true;
 
 		CMfcogl1View* pView;
@@ -1098,83 +1160,103 @@ void CMfcogl1Doc::OnOpenFiberPathControlCylinderParametersDlg() {
 		cylinderModel.right_length = pView->m_view_cylinder_right_length;
 		cylinderModel.right_radius = pView->m_view_cylinder_right_radius;
 		cylinderModel.round = 2.0F * PI * cylinderModel.middle_radius;
-		//计算合适的切点数(缠绕一周出发点的总量)，跳跃数(两次出发点序号的差值)
 
-		float real_width = 0, total_theta = 0;//实际切面宽
-		//real_width = cylinderModel.width / abs(cos(cylinderModel.angle));
-		//M0 = ceil(cylinderModel.round / real_width);//实际剖分段数
-		//interval = cylinderModel.round / M0;//剖分步长
-		//while ((M0 + 1) % cutNum != 0) {//缩小纤维半径以满足切点数约束
-		//	cylinderModel.width -= 0.05;
+		//计算左右摩擦极限位置
+		float tmp_x;
+		float real_left_length = sqrt(pow(cylinderModel.middle_radius, 2) * pow(cylinderModel.left_length, 2) / (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.left_radius, 2)));
+		for (tmp_x = 0; tmp_x < real_left_length; tmp_x += 0.01) {
+			//calculate the...
+			float sv = sin(cylinderModel.angle);
+			float cv = cos(cylinderModel.angle);
+			float tmpy2b = tmp_x * tmp_x / (real_left_length * real_left_length);
+			float tmpa2b = (cylinderModel.middle_radius * cylinderModel.middle_radius) / (real_left_length * real_left_length);
+			float numerator = sv * tmp_x / (cylinderModel.middle_radius * sqrt(1 - tmpy2b));
+			float denominator = cv * cv / (1 - (1 - tmpa2b) * tmpy2b) + sv * sv / tmpa2b;
+			float lambda = numerator / denominator;
+			if (abs(lambda - cylinderModel.slippage_coefficient) < 0.01) {
+				cylinderModel.left_slippage_point = cylinderModel.left_length - tmp_x;
+				break;
+			}
+		}
+		float real_right_length = sqrt(pow(cylinderModel.middle_radius, 2) * pow(cylinderModel.right_length, 2) / (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.right_radius, 2)));
+		for (tmp_x = 0; tmp_x < real_right_length; tmp_x += 0.01) {
+			//calculate the...
+			float sv = sin(cylinderModel.angle);
+			float cv = cos(cylinderModel.angle);
+			float tmpy2b = tmp_x * tmp_x / (real_right_length * real_right_length);
+			float tmpa2b = (cylinderModel.middle_radius * cylinderModel.middle_radius) / (real_right_length * real_right_length);
+			float numerator = sv * tmp_x / (cylinderModel.middle_radius * sqrt(1 - tmpy2b));
+			float denominator = cv * cv / (1 - (1 - tmpa2b) * tmpy2b) + sv * sv / tmpa2b;
+			float lambda = numerator / denominator;
+			if (abs(lambda - cylinderModel.slippage_coefficient) < 0.01) {
+				cylinderModel.right_slippage_point = cylinderModel.right_length + cylinderModel.middle_length + tmp_x;
+				break;
+			}
+		}
+
+		//计算合适的切点数(缠绕一周出发点的总量)，跳跃数(两次出发点序号的差值
+		float real_width = 0, total_theta = 0;
+		//实际切面宽
+		//do {
+		//	cylinderModel.angle -= 0.0001;
+		//	cylinderModel.width = fpCylinderDlg.m_dlg_cylinder_band_width;
 		//	real_width = cylinderModel.width / abs(cos(cylinderModel.angle));
-		//	M0 = ceil(cylinderModel.round / real_width);
-		//	interval = cylinderModel.round / M0;
-		//}
-		//jumpNum = (M0 + 1) / cutNum;
-		// jumpNum*2PI/M0 = 一次绕回的旋转弧度%2PI
-		//jumpAngle = (float)(jumpNum) * 2.0 * PI / (float)M0;
-		do {
-			cylinderModel.angle -= 0.0001;
-			cylinderModel.width = fpCylinderDlg.m_dlg_cylinder_band_width;
-			real_width = cylinderModel.width / abs(cos(cylinderModel.angle));
-			M0 = ceil(cylinderModel.round / real_width);//实际剖分段数
-			interval = cylinderModel.round / M0;//剖分步长
-			while ((M0 + 1) % cutNum != 0) {//缩小纤维半径以满足切点数约束
-				cylinderModel.width -= 0.05;
-				real_width = cylinderModel.width / abs(cos(cylinderModel.angle));
-				M0 = ceil(cylinderModel.round / real_width);
-				interval = cylinderModel.round / M0;
-			}
-			jumpNum = (M0 + 1) / cutNum;
-			jumpAngle = (float)(jumpNum) * 2.0 * PI / (float)M0;
-
-			total_theta = 0;
-			float alpha = cylinderModel.angle, diff_gx = 0, theta = 0;
-			float x = cylinderModel.left_length;
-			while (x <= (cylinderModel.left_length)) {
-				float dx = 0.1 * cos(alpha) * cos(atan(diff_gx));
-				x += -1 * dx;
-				float B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.left_radius, 2)) / pow(cylinderModel.left_length, 2);
-				float gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(x - cylinderModel.left_length, 2), 0));
-				diff_gx = -B * (cylinderModel.left_length - x) / gx;
-				theta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
-				alpha += -diff_gx * tan(alpha) * dx / (gx);
-			}
-			total_theta += abs(theta);
-			total_theta += cylinderModel.middle_length * tan(cylinderModel.angle) / cylinderModel.middle_radius;
-			alpha = cylinderModel.angle; diff_gx = 0, theta = 0;
-			x = cylinderModel.left_length + cylinderModel.middle_length;
-			while (x >= (cylinderModel.left_length + cylinderModel.middle_length)) {
-				float dx = 0.1 * cos(alpha) * cos(atan(diff_gx));
-				x += dx;
-				float B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.right_radius, 2)) / pow(cylinderModel.right_length, 2);
-				float gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(x - cylinderModel.left_length - cylinderModel.middle_length, 2), 0));
-				diff_gx = -B * (x - cylinderModel.left_length - cylinderModel.middle_length) / gx;
-				theta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
-				alpha += -diff_gx * tan(alpha) * dx / (gx);
-			}
-			total_theta += abs(theta);
-			total_theta += cylinderModel.middle_length * tan(cylinderModel.angle) / cylinderModel.middle_radius;
-			while (total_theta >= 2 * PI) {
-				total_theta -= 2 * PI;
-			}
-			if (total_theta > PI) {
-				jumpAngle = 2 * PI - jumpAngle;
-			}
-		} while (abs(jumpAngle - total_theta) > 0.001);
+		//	M0 = ceil(cylinderModel.round / real_width);//实际剖分段数
+		//	interval = cylinderModel.round / M0;//剖分步长
+		//	while ((M0 + 1) % cutNum != 0) {//缩小纤维半径以满足切点数约束
+		//		cylinderModel.width -= 0.05;
+		//		real_width = cylinderModel.width / abs(cos(cylinderModel.angle));
+		//		M0 = ceil(cylinderModel.round / real_width);
+		//		interval = cylinderModel.round / M0;
+		//	}
+		//	jumpNum = (M0 + 1) / cutNum;
+		//	jumpAngle = (float)(jumpNum) * 2.0 * PI / (float)M0;
+		//	total_theta = 0;
+		//	float alpha = cylinderModel.angle, diff_gx = 0, theta = 0;
+		//	float x = cylinderModel.left_length;
+		//	while (x <= (cylinderModel.left_length)) {
+		//		float dx = 0.1 * cos(alpha) * cos(atan(diff_gx));
+		//		x += -1 * dx;
+		//		float B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.left_radius, 2)) / pow(cylinderModel.left_length, 2);
+		//		float gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(x - cylinderModel.left_length, 2), 0));
+		//		diff_gx = -B * (cylinderModel.left_length - x) / gx;
+		//		theta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
+		//		alpha += -diff_gx * tan(alpha) * dx / (gx);
+		//	}
+		//	total_theta += abs(theta);
+		//	total_theta += cylinderModel.middle_length * tan(cylinderModel.angle) / cylinderModel.middle_radius;
+		//	alpha = cylinderModel.angle; diff_gx = 0, theta = 0;
+		//	x = cylinderModel.left_length + cylinderModel.middle_length;
+		//	while (x >= (cylinderModel.left_length + cylinderModel.middle_length)) {
+		//		float dx = 0.1 * cos(alpha) * cos(atan(diff_gx));
+		//		x += dx;
+		//		float B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.right_radius, 2)) / pow(cylinderModel.right_length, 2);
+		//		float gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(x - cylinderModel.left_length - cylinderModel.middle_length, 2), 0));
+		//		diff_gx = -B * (x - cylinderModel.left_length - cylinderModel.middle_length) / gx;
+		//		theta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
+		//		alpha += -diff_gx * tan(alpha) * dx / (gx);
+		//	}
+		//	total_theta += abs(theta);
+		//	total_theta += cylinderModel.middle_length * tan(cylinderModel.angle) / cylinderModel.middle_radius;
+		//	while (total_theta >= 2 * PI) {
+		//		total_theta -= 2 * PI;
+		//	}
+		//	if (total_theta > PI) {
+		//		jumpAngle = 2 * PI - jumpAngle;
+		//	}
+		//} while (abs(jumpAngle - total_theta) > 0.001);
 		CString STemp;
-		STemp.Format(_T("纱宽(修正) = %.3f mm\n等分数=%d\n缠绕角 = %.4f degree\n切点数=%d\n跳跃数=%d"), real_width, M0, cylinderModel.angle*180/PI, cutNum, jumpNum);
+		STemp.Format(_T("纱宽(修正) = %.3f mm\n等分数=%d\n缠绕角 = %.4f degree\n切点数=%d\n跳跃数=%d\n算法: %s"), real_width, M0, cylinderModel.angle * 180 / PI, cutNum, jumpNum, cylinderWindingAlgorithm);
 		AfxMessageBox(STemp);
 	}
 }
 
-
+//计算纤维路径
 void CMfcogl1Doc::OnComputeFiberPathCylinder() {
 	CMfcogl1Doc::CleanTubeMemory();
 	if (m_bCanComputing == true){
 		CylinderPointList = new std::deque<struct cylinderPathCoord>;//CylinderTubePoint的双向链，用之前生成一条纤维的方法生成整个连续纤维
 		windingPathStep = 0.2;//计算的步长
-
 		//generate GL list
 		glNewList(FIBER_PATH_LIST, GL_COMPILE); //FIBER_PATH_LIST     2
 		GLfloat matAmb[4] = { 0.8F, 0.5F, 0.3F, 1.00F };
@@ -1197,11 +1279,26 @@ void CMfcogl1Doc::OnComputeFiberPathCylinder() {
 		currentStartPoint.y = cylinderModel.middle_radius;
 		currentStartPoint.z = 0.0;
 		currentStartPoint.currentTheta = 0;
-		for (int t = 0; t < M0; t++) {
-			OnRenderLeftEllipsoid(CylinderPointList, currentPoint);
-			OnRenderMiddleCylinder(CylinderPointList, currentPoint);
-			OnRenderRightEllipsoid(CylinderPointList, currentPoint);
-			OnRenderMiddleCylinder(CylinderPointList, currentPoint);
+		for (int t = 0; t < 1; t++) {//M0:等分数
+			if (cylinderWindingAlgorithm == "GEODESIC") {
+				OnRenderLeftEllipsoid(CylinderPointList, currentPoint);
+				OnRenderMiddleCylinder(CylinderPointList, currentPoint);
+				OnRenderRightEllipsoid(CylinderPointList, currentPoint);
+				OnRenderMiddleCylinder(CylinderPointList, currentPoint);
+			}
+			else if (cylinderWindingAlgorithm == "FIXED_ANGLE") {
+				OnRenderLeftEllipsoidFixedAngle(CylinderPointList, currentPoint);
+				OnRenderMiddleCylinder(CylinderPointList, currentPoint);
+				OnRenderRightEllipsoidFixedAngle(CylinderPointList, currentPoint);
+				OnRenderMiddleCylinder(CylinderPointList, currentPoint);
+			}
+			else if (cylinderWindingAlgorithm == "NON_GEODESIC") {
+				//TODO: algorithm
+				OnRenderLeftEllipsoidNonGeodesic(CylinderPointList, currentPoint);
+				OnRenderMiddleCylinder(CylinderPointList, currentPoint);
+				OnRenderRightEllipsoidNonGeodesic(CylinderPointList, currentPoint);
+				OnRenderMiddleCylinder(CylinderPointList, currentPoint);
+			}
 			//矫正
 			currentStartPoint.currentTheta += jumpAngle;
 			currentStartPoint.y= cylinderModel.middle_radius * cos(currentStartPoint.currentTheta);
@@ -1272,7 +1369,130 @@ void CMfcogl1Doc::OnRenderLeftEllipsoid(std::deque <struct cylinderPathCoord>* s
 	currentPoint.direction = -currentPoint.direction;//用direction指示缠绕方向 也可用tangent或alpha
 	glEnd();
 }
+void CMfcogl1Doc::OnRenderRightEllipsoidFixedAngle(std::deque <struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint) {
+	glLineWidth(2);
+	glPointSize(2);
+	glBegin(GL_LINE_STRIP);
+	double  alpha = cylinderModel.angle;//初始的缠绕角α(弧度)
+	double dx_curve = 0.05;
+	double diff_gx = 0;
+	while (currentPoint.x >= (cylinderModel.left_length + cylinderModel.middle_length)) {
+		glVertex3f(currentPoint.x, currentPoint.y, currentPoint.z);
+		double dx = dx_curve * cos(alpha) * cos(atan(diff_gx));
+		currentPoint.x += currentPoint.direction * dx;
+		double B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.right_radius, 2)) / pow(cylinderModel.right_length, 2);
+		double gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(currentPoint.x - cylinderModel.left_length - cylinderModel.middle_length, 2), 0));
+		diff_gx = -B * (currentPoint.x - cylinderModel.left_length - cylinderModel.middle_length) / gx;
+		currentPoint.currentTheta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
+		currentPoint.y = gx * cos(currentPoint.currentTheta);
+		currentPoint.z = gx * sin(currentPoint.currentTheta);
+		if (currentPoint.x < cylinderModel.right_slippage_point) {
+		
+		}
+		else {
+			alpha += -diff_gx * tan(alpha) * dx / (gx);
+		}
+	}
+	currentPoint.direction = -currentPoint.direction;//用direction指示缠绕方向 也可用tangent或alpha
+	glEnd();
+}
+void CMfcogl1Doc::OnRenderLeftEllipsoidFixedAngle(std::deque <struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint) {
+	glLineWidth(2);
+	glPointSize(2);
+	glBegin(GL_LINE_STRIP);
+	double  alpha = cylinderModel.angle;//初始的缠绕角α(弧度)
+	double max_slippage_cofficient = cylinderModel.slippage_coefficient;
+	double dx_curve = 0.05;
+	double diff_gx = 0;
+	float current_slippage = 0;
+	//while (current_slippage < max_slippage_cofficient) {
+	//	//x,y,z定缠绕角地增加
+	//	glVertex3f(currentPoint.x, currentPoint.y, currentPoint.z);
+	//	double dx = dx_curve * cos(alpha) * cos(atan(diff_gx));
+	//	currentPoint.x += currentPoint.direction * dx;
 
+	//	float sv = sin(alpha);
+	//	float cv = cos(alpha);
+	//	float tmpx2b = pow(currentPoint.x, 2) / pow(cylinderModel.middle_radius, 2);
+	//	float a = sqrt(pow(cylinderModel.middle_radius, 2) * pow(cylinderModel.right_length, 2) / (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.right_radius, 2)));
+	//	float tmpa2b = pow(a, 2) / pow(cylinderModel.middle_radius, 2);
+
+	//	double B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.right_radius, 2)) / pow(cylinderModel.right_length, 2);
+	//	double gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(currentPoint.x - cylinderModel.left_length - cylinderModel.middle_length, 2), 0));
+	//	diff_gx = -B * (currentPoint.x - cylinderModel.left_length - cylinderModel.middle_length) / gx;
+	//	currentPoint.currentTheta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
+	//	currentPoint.y = gx * cos(currentPoint.currentTheta);
+	//	currentPoint.z = gx * sin(currentPoint.currentTheta);
+	//	/*alpha += -diff_gx * tan(alpha) * dx / (gx);*/
+
+	//	float numerator = sv * currentPoint.x / (a * sqrt(1 - tmpx2b));
+	//	float denominator = (cv * cv) / (1 - (1 - tmpa2b) * tmpx2b) + (sv * sv) / tmpa2b;
+	//	current_slippage = numerator / denominator;
+	//}
+	while (currentPoint.x <= (cylinderModel.left_length)) {
+		glVertex3f(currentPoint.x, currentPoint.y, currentPoint.z);
+		double dx = dx_curve * cos(alpha) * cos(atan(diff_gx));
+		currentPoint.x += currentPoint.direction * dx;
+		double B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.left_radius, 2)) / pow(cylinderModel.left_length, 2);
+		double gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(currentPoint.x - cylinderModel.left_length, 2), 0));
+		diff_gx = -B * (cylinderModel.left_length - currentPoint.x) / gx;
+		currentPoint.currentTheta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
+		currentPoint.y = gx * cos(currentPoint.currentTheta);
+		currentPoint.z = gx * sin(currentPoint.currentTheta);
+		if (currentPoint.x> cylinderModel.left_slippage_point) {
+			//just keep the alpha angle
+		}
+		else {
+			alpha += -diff_gx * tan(alpha) * dx / (gx);
+		}
+	}
+	currentPoint.direction = -currentPoint.direction;//用direction指示缠绕方向 也可用tangent或alpha
+	glEnd();
+}
+void CMfcogl1Doc::OnRenderRightEllipsoidNonGeodesic(std::deque <struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint) {
+	glLineWidth(2);
+	glPointSize(2);
+	glBegin(GL_LINE_STRIP);
+	double  alpha = cylinderModel.angle;//初始的缠绕角α(弧度)
+	double dx_curve = 0.05;
+	double diff_gx = 0;
+	while (currentPoint.x >= (cylinderModel.left_length + cylinderModel.middle_length)) {
+		glVertex3f(currentPoint.x, currentPoint.y, currentPoint.z);
+		double dx = dx_curve * cos(alpha) * cos(atan(diff_gx));
+		currentPoint.x += currentPoint.direction * dx;
+		double B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.right_radius, 2)) / pow(cylinderModel.right_length, 2);
+		double gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(currentPoint.x - cylinderModel.left_length - cylinderModel.middle_length, 2), 0));
+		diff_gx = -B * (currentPoint.x - cylinderModel.left_length - cylinderModel.middle_length) / gx;
+		currentPoint.currentTheta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
+		currentPoint.y = gx * cos(currentPoint.currentTheta);
+		currentPoint.z = gx * sin(currentPoint.currentTheta);
+		alpha += -diff_gx * tan(alpha) * dx / (gx);
+	}
+	currentPoint.direction = -currentPoint.direction;//用direction指示缠绕方向 也可用tangent或alpha
+	glEnd();
+}
+void CMfcogl1Doc::OnRenderLeftEllipsoidNonGeodesic(std::deque <struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint) {
+	glLineWidth(2);
+	glPointSize(2);
+	glBegin(GL_LINE_STRIP);
+	double  alpha = cylinderModel.angle;//初始的缠绕角α(弧度)
+	double dx_curve = 0.05;
+	double diff_gx = 0;
+	while (currentPoint.x <= (cylinderModel.left_length)) {
+		glVertex3f(currentPoint.x, currentPoint.y, currentPoint.z);
+		double dx = dx_curve * cos(alpha) * cos(atan(diff_gx));
+		currentPoint.x += currentPoint.direction * dx;
+		double B = (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.left_radius, 2)) / pow(cylinderModel.left_length, 2);
+		double gx = sqrt(max(pow(cylinderModel.middle_radius, 2) - B * pow(currentPoint.x - cylinderModel.left_length, 2), 0));
+		diff_gx = -B * (cylinderModel.left_length - currentPoint.x) / gx;
+		currentPoint.currentTheta += sqrt(1 + pow((diff_gx), 2)) * tan(alpha) * dx / (gx);
+		currentPoint.y = gx * cos(currentPoint.currentTheta);
+		currentPoint.z = gx * sin(currentPoint.currentTheta);
+		alpha += -diff_gx * tan(alpha) * dx / (gx);
+	}
+	currentPoint.direction = -currentPoint.direction;//用direction指示缠绕方向 也可用tangent或alpha
+	glEnd();
+}
 void CMfcogl1Doc::OnRenderMiddleCylinder(std::deque <struct cylinderPathCoord>* singlePathList, cylinderPathCoord& currentPoint) {
 	glLineWidth(2);
 	glPointSize(2);
