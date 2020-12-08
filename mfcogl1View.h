@@ -1,11 +1,22 @@
 // mfcogl1View.h : interface of the CMfcogl1View class
-
+/*
+复合材料结构 复合材料 JOURNEL OF C P T
+INTRO
+mandrel pre-articulation 座标架 母线MALIDIAN 半椭球+柱面
+fiber path design 推导
+winding pattern design 切点数 缠绕角...  “2020 缠绕模式 影响”架桥
+cad 系统
+试验系统
+CONCLUTION
+*/
 #pragma once
 
 #define PE  pDoc->pPath
 #define PT pDoc->ptrack
 #define MANDREL_DISPLAY_LIST	1//芯模
-#define FIBER_PATH_LIST					2//纤维束
+#define FIBER_PATH_LIST					20//纤维束
+#define FIBER_PATH_LIST2				21//纤维束
+#define FIBER_PATH_LIST3				22//纤维束
 #define FIBER_TRACK_LIST				3//机器路径
 #define COMPOSITE_LIST					4//不知道是啥
 #define GLOBAL_LIST							5 //坐标轴
@@ -64,6 +75,7 @@ public:
 	/*added by LMK*/
 	void CMfcogl1View::CreateTubeDisplayList();
 	void CMfcogl1View::CreateCylinderDisplayList();
+	void CMfcogl1View::CreateConeDisplayList();
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -115,6 +127,7 @@ protected:
 	/*added by LMK*/
 	afx_msg void OnCreateNewTubeMandrel();
 	afx_msg void OnCreateNewCylinderMandrel();
+	afx_msg void OnCreateNewConeMandrel();
 	void CMfcogl1View::DrawAxis();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
@@ -167,6 +180,10 @@ public:
 	GLfloat m_view_cylinder_left_radius;
 	GLfloat m_view_cylinder_right_length;
 	GLfloat m_view_cylinder_right_radius;
+
+	GLfloat m_view_cone_length;
+	GLfloat m_view_cone_lradius;
+	GLfloat m_view_cone_rradius;
 };
 
 #ifndef _DEBUG  // debug version in mfcogl1View.cpp

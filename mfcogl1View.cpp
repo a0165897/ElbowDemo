@@ -5,7 +5,6 @@
 #include "mfcogl1View.h"
 #include <math.h>
 #include "AutoDisplayElapse.h"
-#include "CreateNewCylinderDlg.h"
 #include "mfcogl1.h"
 #include "mfcogl1Doc.h"
 #include "RotationSpeedDlg.h"
@@ -13,6 +12,8 @@
 
 /*added by LMK */
 #include "CreateNewTubeDlg.h"
+#include "CreateNewCylinderDlg.h"
+#include "CreateNewConeDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,6 +66,7 @@ BEGIN_MESSAGE_MAP(CMfcogl1View, CView)
 	/*added by LMK*/
 	ON_COMMAND(IDM_CREATE_NEW_TUBE_MANDREL, OnCreateNewTubeMandrel)
 	ON_COMMAND(IDM_CREATE_NEW_CYLINDER_MANDREL, OnCreateNewCylinderMandrel)
+	ON_COMMAND(IDM_CREATE_NEW_CONE_MANDREL, OnCreateNewConeMandrel)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -140,6 +142,9 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	glDepthFunc(GL_LEQUAL); //without apparent effect
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
+	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	glEnable(GL_AUTO_NORMAL);
+	glEnable(GL_NORMALIZE);
 	//光源
 	GLfloat light0Pos[4] = {0.3F, 0.3F, 0.3F, 1.0F};
 	GLfloat light0Spec[4] = {1.0F, 1.0F, 1.0F, 1.0F};
@@ -195,6 +200,8 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 		if (m_cview_enable_tape_display)
 		{
 			glCallList(FIBER_PATH_LIST);
+			glCallList(FIBER_PATH_LIST2);
+			glCallList(FIBER_PATH_LIST3);
 		}
 		if (m_cview_enable_track_display) 
 		{
@@ -1046,11 +1053,8 @@ void CMfcogl1View::CreateCylinderDisplayList()
 		}
 	}
 	float right = m_view_show_cylinder_left_length + m_view_show_cylinder_middle_length;
-	for (; right < m_view_show_cylinder_left_length + m_view_show_cylinder_middle_length + m_view_show_cylinder_right_length; right +=
-	       step)
-	{
-		for (float r = 0; r <= 360; r += r_step)
-		{
+	for (; right < m_view_show_cylinder_left_length + m_view_show_cylinder_middle_length + m_view_show_cylinder_right_length; right +=step){
+		for (float r = 0; r <= 360; r += r_step){
 			float x1 = right;
 			float B = (pow(m_view_show_cylinder_middle_radius, 2) - pow(m_view_show_cylinder_right_radius, 2)) / pow(m_view_show_cylinder_right_length, 2);
 			float gx1 = sqrt(pow(m_view_show_cylinder_middle_radius, 2) - B * pow(x1 - m_view_show_cylinder_left_length - m_view_show_cylinder_middle_length, 2));
@@ -1074,11 +1078,88 @@ void CMfcogl1View::CreateCylinderDisplayList()
 			glVertex3f(x2, y2, z2);
 		}
 	}
-
 	glEnd();
 	glEndList();
 }
 
+/*Create By LMK*/
+/*圆锥 两端平截*/
+void CMfcogl1View::OnCreateNewConeMandrel()
+{
+	//初始化数值
+	m_cview_enable_tape_display = false;
+	m_cview_enable_track_display = false;
+	m_cview_display_winding_in_sequence = false;
+	m_cview_pnt_num_displayed_to = 0;
+	m_bCanDisplayPath = false;
+	m_bCanDisplayPayeye = false;
+	KillTimer(2);
+	if (glIsList(FIBER_PATH_LIST) == GL_TRUE)
+		glDeleteLists(FIBER_PATH_LIST, 1);
+
+	CMfcogl1Doc* pDoc = GetDocument();
+	pDoc->m_isShowing = 4;
+	CCreateNewConeDlg new_cone_dlg;
+	int choice = new_cone_dlg.DoModal();
+	if (choice == IDOK)
+	{
+		pDoc->ResetWndDesign();
+		m_view_cone_length = new_cone_dlg.m_dlg_cone_length;
+		m_view_cone_lradius = new_cone_dlg.m_dlg_cone_lradius;
+		m_view_cone_rradius = new_cone_dlg.m_dlg_cone_rradius;
+	}
+	CreateConeDisplayList();
+	//to refresh screen
+	Invalidate(false);
+}
+
+void  CMfcogl1View::CreateConeDisplayList() {
+	glNewList(MANDREL_DISPLAY_LIST, GL_COMPILE);
+
+	//light and color setting.
+	GLfloat matDiff[4] = { 0.4F, 0.6F, 0.6F, 1.00F };
+	GLfloat matSpec[4] = { 0.1F, 0.1F, 0.1F, 1.00F };
+	GLfloat matShine = 5.00F;
+
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, matDiff);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, matSpec);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, matShine);
+	//compute the mandrel.
+	glBegin(GL_TRIANGLE_STRIP);
+	// k = (rradius-lradius)/length
+	//-1/k = -length/(rradius-lradius) x=1 r = -length/(rradius-lradius) y = r*cos(PI * a / 180)
+	float left;
+	for (left = 0; left < m_view_cone_length; left++) {
+		for (float a = 0; a <= 360; a+=10) {
+			float x1 = left;
+			float r1 = m_view_cone_lradius + (m_view_cone_rradius - m_view_cone_lradius) * (x1 / m_view_cone_length);
+			float y1 = r1 * cos(PI * a / 180);
+			float z1 = r1 * sin(PI * a / 180);
+			float nx, ny, nz;
+			if (abs(m_view_cone_lradius - m_view_cone_rradius) <0.001) {
+				nx = 0;
+				ny = cos(PI * a / 180);
+				nz = sin(PI * a / 180);
+			}
+			else {
+				nx = (m_view_cone_lradius - m_view_cone_rradius) > 0 ? 1 : -1;
+				ny = m_view_cone_length / (m_view_cone_rradius - m_view_cone_lradius) * cos(PI * a / 180);
+				nz = m_view_cone_length / (m_view_cone_rradius - m_view_cone_lradius) * sin(PI * a / 180);
+			}
+			float normalize = sqrt(nx * nx + ny * ny + nz * nz);
+			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
+			glVertex3f(x1, y1, z1);
+			float x2 = left+1;
+			float r2 = m_view_cone_lradius + (m_view_cone_rradius - m_view_cone_lradius) * (x2 / m_view_cone_length);
+			float y2 = r2 * cos(PI * a / 180);
+			float z2 = r2 * sin(PI * a / 180);
+			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
+			glVertex3f(x2, y2, z2);
+		}
+	}
+	glEnd();
+	glEndList();
+}
 void CMfcogl1View::DrawAxis()
 {
 	if (glIsList(GLOBAL_LIST) == GL_TRUE) { glDeleteLists(GLOBAL_LIST, 1); }

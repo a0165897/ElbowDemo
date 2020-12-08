@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClCompile Include="AutoDisplayElapse.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
+    <ClCompile Include="CreateNewConeDlg.cpp" />
     <ClCompile Include="CreateNewCylinderDlg.cpp" />
     <ClCompile Include="CreateNewTubeDlg.cpp" />
     <ClCompile Include="DlgFiberPathControls.cpp" />
@@ -163,6 +164,7 @@
   <ItemGroup>
     <ClInclude Include="AutoDisplayElapse.h" />
     <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="CreateNewConeDlg.h" />
     <ClInclude Include="CreateNewCylinderDlg.h" />
     <ClInclude Include="CreateNewTubeDlg.h" />
     <ClInclude Include="datatype.h" />

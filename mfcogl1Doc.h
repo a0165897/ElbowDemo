@@ -134,15 +134,13 @@ public:
 	//std::deque<std::deque<struct cylinderPathCoord>*>* CylinderPointList = NULL;
 	std::deque<float>* distanceE = NULL;
 	tubePathCoord tempTubePathCoord;
-	int m_isShowing;//1:tube(方直管) 2:elbow(圆弯管) 3:cylinder(开口压力容器)  
+	int m_isShowing;//1:tube(方直管) 2:elbow(圆弯管) 3:cylinder(开口压力容器)  4:cone(圆锥)
 
-public:
 	unsigned long m_WindingCount[6];
 	unsigned short m_numlayer;
 	float m_FilamentWidth,cylinder_radius[6];
 	bool m_bFiberPathComplete,m_bPayeyeComplete,m_bUseLayer;
 // Implementation
-public:
 	void ResetWndDesign();
 	bool IsEachPrime(int m1,int m2);
 	virtual ~CMfcogl1Doc();
@@ -210,8 +208,10 @@ protected:
 	/*added by LMK*/
 	afx_msg void OnOpenFiberPathControlTubeParametersDlg();
 	afx_msg void OnOpenFiberPathControlCylinderParametersDlg();
+	void CMfcogl1Doc::OnOpenFiberPathControlConeParametersDlg();
 	afx_msg void OnComputeFiberPathTube();
 	afx_msg void OnComputeFiberPathCylinder();
+	afx_msg void OnComputeFiberPathCone();
 	afx_msg void OnComputePayeyeTube();
 	void CMfcogl1Doc::CleanTubeMemory();
 	//}}AFX_MSG
