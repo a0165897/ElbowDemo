@@ -20,7 +20,7 @@ public:
 	float m_dlg_tube_a;
 	float m_dlg_tube_b;
 	float m_dlg_tube_r;
-	
+	float m_dlg_tube_redundance;
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	virtual BOOL OnInitDialog();

@@ -36,7 +36,3 @@ BOOL CCreateNewConeDlg::OnInitDialog() {
 	return TRUE;
 }
 
-
-
-
-// CCreateNewConeDlg 消息处理程序

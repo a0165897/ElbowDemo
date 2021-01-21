@@ -15,11 +15,10 @@ CONCLUTION
 #define PT pDoc->ptrack
 #define MANDREL_DISPLAY_LIST	1//芯模
 #define FIBER_PATH_LIST					20//纤维束
-#define FIBER_PATH_LIST2				21//纤维束
-#define FIBER_PATH_LIST3				22//纤维束
+//每次初始化都会delete 20~36
 #define FIBER_TRACK_LIST				3//机器路径
 #define COMPOSITE_LIST					4//不知道是啥
-#define GLOBAL_LIST							5 //坐标轴
+#define AXIS_LIST							5 //坐标轴
 #include "mfcogl1Doc.h" 
 #include "MainFrm.h"
 
@@ -62,10 +61,13 @@ public:
 
 // Implementation
 public:
+	float currentPoint1[3],currentPoint2[3];
+	float currentNormal1[3],currentNormal2[3];
 	bool m_cview_disable_mandrel_display;
 	bool m_cview_enable_tape_display;
 	bool m_cview_enable_track_display;
-
+	bool m_show_axis;
+	void DisplayLinkPart();			
 	int DisplayPayeyeProcess();
 	int DisplaytheWindingProcess();
 	void InitFrustum();
@@ -123,7 +125,7 @@ protected:
 	afx_msg void OnAdjustDisplayElapse();
 	afx_msg void OnViewDisplayMandrel();
 	afx_msg void OnUpdateViewDisplayMandrel(CCmdUI* pCmdUI);
-
+	afx_msg void OnChangeAxis();
 	/*added by LMK*/
 	afx_msg void OnCreateNewTubeMandrel();
 	afx_msg void OnCreateNewCylinderMandrel();
@@ -167,12 +169,13 @@ private:
 public:
 	/*added by LMK*/
 	float windingAngle;
-
+	float cur_spindle;
 	//dialog(IDC_TUBE_WIDTH/2 - RADIUS)->Class CreateNewTubeDlg(m_dlg_tube_a)->view(m_view_tube_a)
 	GLfloat m_view_tube_a;
 	GLfloat m_view_tube_b;
-	GLfloat m_view_tube_length =0;
+	GLfloat m_view_tube_length;
 	GLfloat m_view_tube_r;
+	GLfloat m_view_tube_redundence;
 
 	GLfloat m_view_cylinder_middle_length;
 	GLfloat m_view_cylinder_middle_radius;

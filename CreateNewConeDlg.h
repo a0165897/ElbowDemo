@@ -10,7 +10,7 @@ public:
 
 	// 对话框数据
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_CREATE_NEW_TUBE };
+	enum { IDD = IDD_CREATE_NEW_CONE };
 #endif
 	float m_dlg_cone_length;
 	float m_dlg_cone_lradius;

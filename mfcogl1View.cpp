@@ -62,7 +62,7 @@ BEGIN_MESSAGE_MAP(CMfcogl1View, CView)
 	ON_COMMAND(IDM_ADJUST_DISPLAY_ELAPSE, OnAdjustDisplayElapse)
 	ON_COMMAND(ID_VIEW_DISPLAY_MANDREL, OnViewDisplayMandrel) //显示芯模
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DISPLAY_MANDREL, OnUpdateViewDisplayMandrel)
-
+	ON_COMMAND(IDM_SHOW_AXIS,OnChangeAxis)
 	/*added by LMK*/
 	ON_COMMAND(IDM_CREATE_NEW_TUBE_MANDREL, OnCreateNewTubeMandrel)
 	ON_COMMAND(IDM_CREATE_NEW_CYLINDER_MANDREL, OnCreateNewCylinderMandrel)
@@ -81,7 +81,7 @@ CMfcogl1View::CMfcogl1View()
 	m_bCanDisplayPath = false;
 	pDoc = nullptr;
 	m_bCanDisplayMandrel = bDynamicFlag = true;
-
+	m_show_axis = false;
 	m_cview_pPathPoint = nullptr;
 	m_cview_total_path_point_number = 0;
 	m_cview_auto_draw_two_points = true;
@@ -142,6 +142,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	glDepthFunc(GL_LEQUAL); //without apparent effect
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glEnable(GL_AUTO_NORMAL);
 	glEnable(GL_NORMALIZE);
@@ -163,7 +164,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 		m_elbow_updated = FALSE;
 	}
 
-	glClearColor(0.9, 0.9f, 0.9f, 1.0f); //white
+	glClearColor(1.0, 1.0f, 1.0f, 1.0f); //white
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//定义World2View矩阵
 	glLoadIdentity();
@@ -179,9 +180,9 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	}
 	else glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	//画坐标轴
-	glLineWidth(3.0);
-	glCallList(GLOBAL_LIST);
-	glLineWidth(1.0);
+	if (m_show_axis) {
+		glCallList(AXIS_LIST);
+	}
 	//旋转只影响芯模和纤维，不影响坐标轴和机器路径
 	if (m_auto_rotate)
 	{
@@ -199,9 +200,11 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	{
 		if (m_cview_enable_tape_display)
 		{
-			glCallList(FIBER_PATH_LIST);
-			glCallList(FIBER_PATH_LIST2);
-			glCallList(FIBER_PATH_LIST3);
+			int path_id = FIBER_PATH_LIST;
+			while (glIsList(path_id)) {
+				glCallList(path_id);
+				path_id++;
+			}
 		}
 		if (m_cview_enable_track_display) 
 		{
@@ -238,11 +241,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 		if (m_bCanDisplayPath)
 		{
 			//动态的纤维路径
-			glPushMatrix();
-		//	glRotatef(windingAngle, 0.0, 0.0, 1.0);
 			DisplaytheWindingProcess();
-			glPopMatrix();
-
 		}
 		if (m_bCanDisplayPayeye)
 		{
@@ -250,7 +249,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 			DisplayPayeyeProcess();
 		}
 	} //动态展示部分到此结束
-	glPopMatrix();
+	//glPopMatrix();
 	glFlush();
 
 	SwapBuffers(wglGetCurrentDC());
@@ -359,12 +358,25 @@ void CMfcogl1View::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	//ToUper
 	switch (nChar)
 	{
-	case '3':
+	case 'k': {
+		step_number = 0;
+		if ((m_cview_pnt_num_displayed_to == m_cview_total_path_point_number) ||
+			(m_payeye_to == m_cview_total_path_point_number))
+			KillTimer(2);
+		if (m_cview_total_path_point_number >= (m_cview_pnt_num_displayed_to + 1))
+			m_cview_pnt_num_displayed_to = m_cview_pnt_num_displayed_to + 1;
+		else if (m_cview_total_path_point_number >= (m_cview_pnt_num_displayed_to + 1))
+			m_cview_pnt_num_displayed_to = m_cview_total_path_point_number;
+		if (m_bCanDisplayPayeye)
 		{
-			//DEBUG
-			int fuck = 1;
-			break;
+			if (m_cview_total_path_point_number >= (m_payeye_to + 1))
+				m_payeye_to += 1;
+			else if (m_cview_total_path_point_number >= (m_payeye_to + 1))
+				m_payeye_to = m_cview_total_path_point_number;
 		}
+		Invalidate(false);
+		break;
+	}
 	case 'x':
 		{
 			m_Xangle += 15;
@@ -385,15 +397,15 @@ void CMfcogl1View::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		}
 	case '=':
 		{
-			step_number += 10;
+			step_number += 1;
 			break;
 		}
 	case '-':
 		{
-			if (step_number > 10)
-				step_number -= 10;
+			if (step_number >= 1)
+				step_number -= 1;
 			else
-				step_number = 1;
+				step_number = 0;
 			break;
 		}
 	}
@@ -469,8 +481,8 @@ void CMfcogl1View::InitFrustum()
 	glLoadIdentity();
 	//平截头裁剪面
 	fNearPlane = 0.1F;
-	fFarPlane = 10000.0F;
-	fovy = 15.0F; //the bigger fovy is, the smaller the image is , fovy++, size--
+	fFarPlane = 4000.0F;
+	fovy = 25.0F; //the bigger fovy is, the smaller the image is , fovy++, size--
 	//定义一下透视矩阵
 	gluPerspective(fovy, fAspect, fNearPlane, fFarPlane);
 	glMatrixMode(GL_MODELVIEW);
@@ -520,19 +532,21 @@ void CMfcogl1View::OnUpdateLinePolygonMode(CCmdUI* pCmdUI)
 
 void CMfcogl1View::OnAutoRotate()
 {
-	if (m_auto_rotate)
-	{
-		//rotating now
-		KillTimer(0);
-		Invalidate(false);
+	if (!m_cview_auto_draw_two_points) {
+		if (m_auto_rotate)
+		{
+			//rotating now
+			KillTimer(0);
+			Invalidate(false);
+		}
+		else
+		{
+			//not rotating now
+			SetTimer(0, 10, nullptr);
+		}
+		m_auto_rotate = !m_auto_rotate;
+		m_angle_increment = 0.01 * m_view_rotation_speed * 360 / 60;
 	}
-	else
-	{
-		//not rotating now
-		SetTimer(0, 10, nullptr);
-	}
-	m_auto_rotate = !m_auto_rotate;
-	m_angle_increment = 0.01 * m_view_rotation_speed * 360 / 60;
 }
 
 void CMfcogl1View::OnUpdateAutoRotate(CCmdUI* pCmdUI)
@@ -540,8 +554,7 @@ void CMfcogl1View::OnUpdateAutoRotate(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_auto_rotate);
 }
 
-void CMfcogl1View::OnLButtonDown(UINT nFlags, CPoint point)
-{
+void CMfcogl1View::OnLButtonDown(UINT nFlags, CPoint point){
 	if (m_auto_rotate)
 	{
 		//KillTimer(0);	
@@ -568,7 +581,7 @@ void CMfcogl1View::OnTimer(UINT nIDEvent)
 {
 	if (m_auto_rotate)
 	{
-		m_auto_rotate_angle += m_angle_increment;
+		//m_auto_rotate_angle += m_angle_increment;
 	}
 	if (m_cview_auto_draw_two_points)
 	{
@@ -661,17 +674,23 @@ int CMfcogl1View::DisplayPayeyeProcess()
 		int count = 0;
 		std::deque<struct track>::iterator track;
 		std::deque<std::deque<struct track>*>::iterator line;
+		float currentNormal[3];
+		float trackPoint[3];
 		for (line = pDoc->TubeTrackList->begin(); line < pDoc->TubeTrackList->end(); line++) {
 			if (count + (*line)->size() <= point_number) {
 				//draw this line
 				glBegin(GL_LINE_STRIP);
 				for (track = (*line)->begin(); track < (*line)->end(); track++) {
-					float currentNormal[3] = { 0,cos(track->swingAngle),sin(track->swingAngle) };
-					glNormal3fv(currentNormal);
-					float trackMandrelLength = pDoc->tubeModel.a + pDoc->tubeModel.r + pDoc->payeye.pm_distance - track->x;//吐丝嘴到芯模中心轴的垂直距离
-					float trackPoint[3] = { trackMandrelLength * cos(track->spindleAngle), trackMandrelLength * sin(track->spindleAngle), track->z };
-					//float trackPoint[3] = { trackMandrelLength , 0, track->z };
-					glVertex3fv(trackPoint);
+					currentNormal[0] = 0;
+					currentNormal[1] = cos(track->swingAngle);
+					currentNormal[2] = sin(track->swingAngle);
+					//glNormal3fv(currentNormal);
+					float trackMandrelLength = pDoc->payeye.pm_distance - track->x;//吐丝嘴到芯模中心轴的垂直距离
+					trackPoint[0] = trackMandrelLength * cos(track->spindleAngle);
+					trackPoint[1] = trackMandrelLength * sin(track->spindleAngle);
+					trackPoint[2] = track->z;
+					cur_spindle = track->spindleAngle;
+					//glVertex3fv(trackPoint);
 				}
 				glEnd();
 				count += ((*line)->size());
@@ -681,33 +700,61 @@ int CMfcogl1View::DisplayPayeyeProcess()
 				glBegin(GL_LINE_STRIP);
 				track = (*line)->begin();
 				for (; track < (*line)->begin() + (point_number - count); track++) {
-					float currentNormal[3] = { 0,cos(track->swingAngle),sin(track->swingAngle) };
+					currentNormal[0] = 0;
+					currentNormal[1] = cos(track->swingAngle);
+					currentNormal[2] = sin(track->swingAngle);
 					glNormal3fv(currentNormal);
-					float trackMandrelLength = pDoc->tubeModel.a + pDoc->tubeModel.r + pDoc->payeye.pm_distance - track->x;//吐丝嘴到芯模中心轴的垂直距离
-					float trackPoint[3] = { trackMandrelLength * cos(track->spindleAngle), trackMandrelLength * sin(track->spindleAngle), track->z };
-					//float trackPoint[3] = { trackMandrelLength , 0, track->z };
+					float trackMandrelLength = pDoc->payeye.pm_distance - track->x;//吐丝嘴到芯模中心轴的垂直距离
+					trackPoint[0] = trackMandrelLength * cos(track->spindleAngle);
+					trackPoint[1] = trackMandrelLength * sin(track->spindleAngle);
+					trackPoint[2] = track->z;
 					glVertex3fv(trackPoint);
+					cur_spindle = track->spindleAngle;
 				}
 				glEnd();
 				count = point_number;
-				windingAngle = -360 * (track->spindleAngle / (2 * PI));
 				break;
 			}
 		}
-		//if (track != (*line)->end()) {//todo:bug 到头会出bug
-		//	if (track != (*line)->begin()) {
-		//		track--;
-		//	}
-		//	else {
-		//		line--;
-		//		track = (*line)->end() - 1;
-		//	}
-		//	astring.Format("z:%.1f x:%.1f 芯模:%.1f°吐丝嘴:%.1f°", track->z, track->x, 180.0 / PI * track->spindleAngle, 180.0 / PI * track->swingAngle);
-		//}
+		currentPoint2[0] = trackPoint[0];
+		currentPoint2[1] = trackPoint[1];
+		currentPoint2[2] = trackPoint[2];
+		currentNormal2[0] = currentNormal[0];
+		currentNormal2[1] = currentNormal[1];
+		currentNormal2[2] = currentNormal[2];
+		windingAngle = -360.0 * (cur_spindle / (2 * PI));
+		m_auto_rotate_angle = windingAngle;
+		DisplayLinkPart();
 	}
 	return 0;
 }
+void CMfcogl1View::DisplayLinkPart() {
+	if (pDoc->m_bPayeyeComplete && pDoc->m_bFiberPathComplete && pDoc->m_isShowing == 1) {
+		GLfloat matDiff[4] = { 1.0F, 0.0F, 0.0F, 0.80F };
+		GLfloat matSpec[4] = { 0.30F, 0.30F, 0.30F, 0.30F };
+		GLfloat matShine = 60.00F;
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
+		glMaterialf(GL_FRONT, GL_SHININESS, matShine);
+		glLineWidth(2);
 
+		glBegin(GL_LINES);
+		glNormal3fv(currentNormal1);
+		glVertex3fv(currentPoint1);//纱线临界位置
+		glNormal3fv(currentNormal2);
+		glVertex3fv(currentPoint2);//吐丝嘴位置
+
+		GLfloat matDiff2[4] = { 0.0F, 1.0F, 0.0F, 0.80F };
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff2);
+		glNormal3fv(currentNormal2);
+		glVertex3fv(currentPoint2);//吐丝嘴位置
+		glNormal3fv(currentNormal2);
+		float angle = cur_spindle;
+		float buttom = pDoc->payeye.pm_distance;
+		glVertex3f(buttom*cos(angle),buttom*sin(angle), currentPoint2[2]);//吐丝嘴底座位置
+		glEnd();
+	}
+}
 //显示纤维路径
 int CMfcogl1View::DisplaytheWindingProcess()
 {
@@ -724,13 +771,20 @@ int CMfcogl1View::DisplaytheWindingProcess()
 		glMaterialf(GL_FRONT, GL_SHININESS, matShine);
 		glLineWidth(2);
 		int count = 0;
+		float currentNormal[3];
+		float currentPoint[3];
 		for (auto line = pDoc->TubePointList->begin(); line < pDoc->TubePointList->end(); line++) {
 			if (count + (*line)->size() <= point_number) {
 				//draw this line
 				glBegin(GL_LINE_STRIP);
 				for (auto point = (*line)->begin(); point < (*line)->end(); point++) {
-					float currentNormal[3] = { cos((*point).normal_radian),sin((*point).normal_radian),0 };
-					float currentPoint[3] = { (*point).x,(*point).y,(*point).z };
+					currentNormal[0] = cos((*point).normal_radian);
+					currentNormal[1] = sin((*point).normal_radian);
+					currentNormal[2] = 0;
+					currentPoint[0] = (*point).x;
+					currentPoint[1] = (*point).y;
+					currentPoint[2] = (*point).z;
+
 					glNormal3fv(currentNormal);
 					glVertex3fv(currentPoint);
 				}
@@ -741,8 +795,12 @@ int CMfcogl1View::DisplaytheWindingProcess()
 				//draw this line from 0 to point_number - count
 				glBegin(GL_LINE_STRIP);
 				for (auto point = (*line)->begin(); point < (*line)->begin()+(point_number-count); point++) {
-					float currentNormal[3] = { cos((*point).normal_radian),sin((*point).normal_radian),0 };
-					float currentPoint[3] = { (*point).x,(*point).y,(*point).z };
+					currentNormal[0] = cos((*point).normal_radian);
+					currentNormal[1] = sin((*point).normal_radian);
+					currentNormal[2] = 0;
+					currentPoint[0] = (*point).x;
+					currentPoint[1] = (*point).y;
+					currentPoint[2] = (*point).z;
 					glNormal3fv(currentNormal);
 					glVertex3fv(currentPoint);
 				}
@@ -750,6 +808,12 @@ int CMfcogl1View::DisplaytheWindingProcess()
 				count = point_number;
 			}
 		}
+		currentPoint1[0] = currentPoint[0];
+		currentPoint1[1] = currentPoint[1];
+		currentPoint1[2] = currentPoint[2];
+		currentNormal1[0] = currentNormal[0];
+		currentNormal1[1] = currentNormal[1];
+		currentNormal1[2] = currentNormal[2];
 	}
 	return 0;
 }
@@ -777,14 +841,13 @@ void CMfcogl1View::OnPayeyeSimulation()
 	{
 		m_cview_display_winding_in_sequence = true;
 		m_bCanDisplayPayeye = TRUE;
-		m_auto_rotate = FALSE;
 		m_cview_total_path_point_number = pDoc->m_WindingCount[0];
 		m_cview_pnt_num_displayed_to = 1;
 		Invalidate(FALSE);
 	}
 	else
 	{
-		AfxMessageBox(_T("Please compute payeye track or load existent file first !"));
+		AfxMessageBox(_T("Please compute payeye track first !"));
 	}
 }
 
@@ -796,7 +859,6 @@ void CMfcogl1View::OnDisplayWindingSequence()
 	{
 		m_cview_display_winding_in_sequence = true;
 		m_bCanDisplayPath = TRUE;
-		m_auto_rotate = FALSE;
 		m_cview_total_path_point_number = pDoc->m_WindingCount[0];
 		m_cview_pnt_num_displayed_to = 1;
 		Invalidate(FALSE);
@@ -809,7 +871,7 @@ void CMfcogl1View::OnResetDisplayProcessToStart()
 	m_cview_pnt_num_displayed_to = 0;
 }
 
-void CMfcogl1View::OnDisplayNextPointOfWindingProcess()
+void CMfcogl1View::OnDisplayNextPointOfWindingProcess()//not used
 {
 	if (m_cview_total_path_point_number >= (m_cview_pnt_num_displayed_to + 2))
 		m_cview_pnt_num_displayed_to = m_cview_pnt_num_displayed_to + 2;
@@ -822,15 +884,16 @@ void CMfcogl1View::OnDisplayNextPointOfWindingProcess()
 //实时仿真路径
 void CMfcogl1View::OnAutoDisplayNextPoint()
 {
+	m_auto_rotate = true;
+	OnDisplayWindingSequence();
+	OnPayeyeSimulation();
 	if (m_bCanDisplayPath || m_bCanDisplayPayeye)
 	{
 		unsigned short elapse;
-		if (pDoc->m_bUseLayer)
-			m_cview_total_path_point_number = pDoc->m_WindingCount[pDoc->m_numlayer - 1];
-		else m_cview_total_path_point_number = pDoc->m_WindingCount[0];
+		m_cview_total_path_point_number = pDoc->m_WindingCount[0];
 
 		m_cview_auto_draw_two_points = TRUE;
-		m_auto_rotate = !m_cview_auto_draw_two_points;
+		//m_auto_rotate = !m_cview_auto_draw_two_points;
 
 		elapse = m_cview_display_elapse;
 		SetTimer(2, elapse, nullptr);
@@ -865,6 +928,11 @@ void CMfcogl1View::OnUpdateViewDisplayMandrel(CCmdUI* pCmdUI)
 	// TODO: Add your command update UI handler code here
 }
 
+void CMfcogl1View::OnChangeAxis() {
+	m_show_axis = !m_show_axis;
+	Invalidate(FALSE);
+}
+
 void CMfcogl1View::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
 	CMfcogl1Doc* pDoc;
@@ -893,8 +961,8 @@ void CMfcogl1View::OnCreateNewTubeMandrel()
 	m_bCanDisplayPath = false;
 	m_bCanDisplayPayeye = false;
 	KillTimer(2);
-	if (glIsList(FIBER_PATH_LIST) == GL_TRUE)
-		glDeleteLists(FIBER_PATH_LIST, 1);
+	glDeleteLists(FIBER_PATH_LIST, 16);
+
 
 	CMfcogl1Doc* pDoc = GetDocument();
 	pDoc->m_isShowing = 1;
@@ -907,6 +975,7 @@ void CMfcogl1View::OnCreateNewTubeMandrel()
 		m_view_tube_b = new_tube_dlg.m_dlg_tube_b;
 		m_view_tube_length = new_tube_dlg.m_dlg_tube_length;
 		m_view_tube_r = new_tube_dlg.m_dlg_tube_r;
+		m_view_tube_redundence = new_tube_dlg.m_dlg_tube_redundance;
 	}
 	CreateTubeDisplayList();
 	//to refresh screen
@@ -916,21 +985,19 @@ void CMfcogl1View::OnCreateNewTubeMandrel()
 //方管的芯模
 void CMfcogl1View::CreateTubeDisplayList()
 {
-	GLfloat length_step = m_view_tube_length;
 	int i = 0, flagx = 1, flagy = 1, degree, angle_step = 10;
+	GLfloat length_step = m_view_tube_length, mandrel_a = m_view_tube_a - 0.1, mandrel_b = m_view_tube_b - 0.1, mandrel_r = m_view_tube_r - 0.1;;//减少 z fighting
 	glNewList(MANDREL_DISPLAY_LIST, GL_COMPILE);
 
 	//light and color setting.
-	GLfloat matDiff[4] = {0.4F, 0.6F, 0.6F, 1.00F};
 	GLfloat matSpec[4] = {0.1F, 0.1F, 0.1F, 1.00F};
 	GLfloat matShine = 5.00F;
-
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
 	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
-	//减少 z fighting
-	GLfloat mandrel_a = m_view_tube_a - 0.1, mandrel_b = m_view_tube_b - 0.1, mandrel_r = m_view_tube_r - 0.1;
-	//compute the mandrel.
+
+	//compute the mandrel.芯模主段
+	GLfloat matDiff[4] = { 0.4F, 0.6F, 0.6F, 1.00F };
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
 	glBegin(GL_TRIANGLE_STRIP);
 	for (degree = 0; degree <= 360; degree += angle_step)
 	{
@@ -950,6 +1017,51 @@ void CMfcogl1View::CreateTubeDisplayList()
 		           flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), length_step * (i++ % 2));
 	}
 	glEnd();
+
+	//芯模左端的冗余部分(灰色)
+	matDiff[0] = 0.6F;
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
+	glBegin(GL_TRIANGLE_STRIP);
+	length_step = -m_view_tube_redundence;
+	for (degree = 0; degree <= 360; degree += angle_step)
+	{
+		if (degree % 90 == 0)
+		{
+			glVertex3f(flagx * mandrel_a + mandrel_r * cos(degree * PI / 180),
+				flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), length_step * (i++ % 2));
+			glVertex3f(flagx * mandrel_a + mandrel_r * cos(degree * PI / 180),
+				flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), length_step * (i++ % 2));
+		}
+		flagx = (degree >= 90 && degree < 270) ? -1 : 1;
+		flagy = (degree >= 180 && degree < 360) ? -1 : 1;
+		glNormal3f(cos(degree * PI / 180), sin(degree * PI / 180), 0.0f);
+		glVertex3f(flagx * mandrel_a + mandrel_r * cos(degree * PI / 180),
+			flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), length_step * (i++ % 2));
+		glVertex3f(flagx * mandrel_a + mandrel_r * cos(degree * PI / 180),
+			flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), length_step * (i++ % 2));
+	}
+	glEnd();
+	//芯模右端的冗余部分(灰色)
+	glBegin(GL_TRIANGLE_STRIP);
+	length_step = m_view_tube_redundence;
+	for (degree = 0; degree <= 360; degree += angle_step)
+	{
+		if (degree % 90 == 0)
+		{
+			glVertex3f(flagx * mandrel_a + mandrel_r * cos(degree * PI / 180),
+				flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), m_view_tube_length + length_step * (i++ % 2));
+			glVertex3f(flagx * mandrel_a + mandrel_r * cos(degree * PI / 180),
+				flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), m_view_tube_length + length_step * (i++ % 2));
+		}
+		flagx = (degree >= 90 && degree < 270) ? -1 : 1;
+		flagy = (degree >= 180 && degree < 360) ? -1 : 1;
+		glNormal3f(cos(degree * PI / 180), sin(degree * PI / 180), 0.0f);
+		glVertex3f(flagx * mandrel_a + mandrel_r * cos(degree * PI / 180),
+			flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), m_view_tube_length + length_step * (i++ % 2));
+		glVertex3f(flagx * mandrel_a + mandrel_r * cos(degree * PI / 180),
+			flagy * mandrel_b + mandrel_r * sin(degree * PI / 180), m_view_tube_length + length_step * (i++ % 2));
+	}
+	glEnd();
 	glEndList();
 }
 
@@ -958,6 +1070,7 @@ void CMfcogl1View::CreateTubeDisplayList()
 void CMfcogl1View::OnCreateNewCylinderMandrel()
 {
 	//初始化数值
+	glDeleteLists(FIBER_PATH_LIST, 16);
 	m_cview_enable_track_display = false;
 	m_cview_enable_tape_display = false;
 	m_cview_display_winding_in_sequence = false;
@@ -965,8 +1078,6 @@ void CMfcogl1View::OnCreateNewCylinderMandrel()
 	m_bCanDisplayPayeye = false;
 	m_cview_pnt_num_displayed_to = 0;
 	KillTimer(2);
-	if (glIsList(FIBER_PATH_LIST) == GL_TRUE)
-		glDeleteLists(FIBER_PATH_LIST, 1);
 
 	CMfcogl1Doc* pDoc = GetDocument();
 	pDoc->m_isShowing = 3;
@@ -990,26 +1101,27 @@ void CMfcogl1View::OnCreateNewCylinderMandrel()
 //计算开口压力容器的芯模 gl list输出
 void CMfcogl1View::CreateCylinderDisplayList()
 {
-	float bias = 0.2;
+	float bias = 0.0001;
 	float m_view_show_cylinder_middle_length = m_view_cylinder_middle_length - bias;
 	float m_view_show_cylinder_middle_radius = m_view_cylinder_middle_radius - bias;
 	float m_view_show_cylinder_left_length = m_view_cylinder_left_length - bias;
 	float m_view_show_cylinder_left_radius = m_view_cylinder_left_radius - bias;
 	float m_view_show_cylinder_right_length = m_view_cylinder_right_length - bias;
 	float m_view_show_cylinder_right_radius = m_view_cylinder_right_radius - bias;
+	float half = 1.5 * bias;
 	glNewList(MANDREL_DISPLAY_LIST, GL_COMPILE);
 
 	//light and color setting.
-	GLfloat matDiff[4] = {0.4F, 0.6F, 0.6F, 1.00F};
-	GLfloat matSpec[4] = {0.1F, 0.1F, 0.1F, 1.00F};
-	GLfloat matShine = 5.00F;
+	GLfloat matDiff[4] = {0.7F, 0.7F, 0.7F, 1.00F};
+	GLfloat matSpec[4] = {0.3F, 0.3F, 0.3F, 1.00F};
+	GLfloat matShine = 0.00F;
 
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
 	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
 	//compute the mandrel.
 	glBegin(GL_TRIANGLE_STRIP);
-	float left = 0, step = 1, r_step = 10;
+	float left = 0, step = 0.1, r_step = 5;
 	for (; left < m_view_show_cylinder_left_length; left += step)
 	{
 		for (float r = 0; r <= 360; r += r_step)
@@ -1030,11 +1142,11 @@ void CMfcogl1View::CreateCylinderDisplayList()
 			float nx = -1, ny = diff_gx1 * sin(2 * PI * r / 360), nz = diff_gx1 *cos(2 * PI * r / 360);
 			float normalize = sqrt(nx * nx + ny * ny + nz * nz);
 			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
-			glVertex3f(x1, y1, z1);
+			glVertex3f(half+x1, y1, z1);
 			nx = -1, ny = diff_gx2 * sin(2 * PI * r / 360), nz = diff_gx2 * cos(2 * PI * r / 360);
 			normalize = sqrt(nx * nx + ny * ny + nz * nz);
 			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
-			glVertex3f(x2, y2, z2);
+			glVertex3f(half+x2, y2, z2);
 		}
 	}
 	float middle = m_view_show_cylinder_left_length;
@@ -1046,10 +1158,10 @@ void CMfcogl1View::CreateCylinderDisplayList()
 			float y = m_view_show_cylinder_middle_radius * sin(2 * PI * r / 360);
 			float z = m_view_show_cylinder_middle_radius * cos(2 * PI * r / 360);
 			glNormal3f(0, sin(r * PI / 180), cos(r * PI / 180));
-			glVertex3f(x, y, z);
+			glVertex3f(half + x, y, z);
 			x += step;
 			glNormal3f(0, sin(r * PI / 180), cos(r * PI / 180));
-			glVertex3f(x, y, z);
+			glVertex3f(half + x, y, z);
 		}
 	}
 	float right = m_view_show_cylinder_left_length + m_view_show_cylinder_middle_length;
@@ -1071,11 +1183,11 @@ void CMfcogl1View::CreateCylinderDisplayList()
 			float nx = 1.0, ny = diff_gx1 * sin(2 * PI * r / 360), nz = diff_gx1 * cos(2 * PI * r / 360);
 			float normalize = sqrt(nx * nx + ny * ny + nz * nz);
 			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
-			glVertex3f(x1, y1, z1);
+			glVertex3f(half + x1, y1, z1);
 			nx = 1.0, ny = diff_gx2 * sin(2 * PI * r / 360), nz = diff_gx2 * cos(2 * PI * r / 360);
 			normalize = sqrt(nx * nx + ny * ny + nz * nz);
 			glNormal3f(nx / normalize, ny / normalize, nz / normalize);
-			glVertex3f(x2, y2, z2);
+			glVertex3f(half + x2, y2, z2);
 		}
 	}
 	glEnd();
@@ -1094,8 +1206,7 @@ void CMfcogl1View::OnCreateNewConeMandrel()
 	m_bCanDisplayPath = false;
 	m_bCanDisplayPayeye = false;
 	KillTimer(2);
-	if (glIsList(FIBER_PATH_LIST) == GL_TRUE)
-		glDeleteLists(FIBER_PATH_LIST, 1);
+	glDeleteLists(FIBER_PATH_LIST, 16);
 
 	CMfcogl1Doc* pDoc = GetDocument();
 	pDoc->m_isShowing = 4;
@@ -1162,34 +1273,46 @@ void  CMfcogl1View::CreateConeDisplayList() {
 }
 void CMfcogl1View::DrawAxis()
 {
-	if (glIsList(GLOBAL_LIST) == GL_TRUE) { glDeleteLists(GLOBAL_LIST, 1); }
-	glNewList(GLOBAL_LIST, GL_COMPILE);
+	if (glIsList(AXIS_LIST) == GL_TRUE) { glDeleteLists(AXIS_LIST, 1); }
+	glNewList(AXIS_LIST, GL_COMPILE);
 	//light and color setting.
 	GLfloat matDiff[4] = {0.4F, 0.6F, 0.6F, 1.00F};
 	GLfloat matSpec[4] = {0.1F, 0.1F, 0.1F, 1.00F};
 	GLfloat matShine = 5.00F;
-
+	glLineWidth(1.5f);
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);
 	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
 
 	glBegin(GL_LINES);
-	GLfloat axisDiff[4] = {1.0F, 0.0F, 0.0F, 1.00F};
+	GLfloat axisDiff[4] = {1.0F, 0.0F, 0.0F, 0.8F};
 	glNormal3f(1, 0, 0);
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, axisDiff);
 	glVertex3f(0, 0, 0);
-	glVertex3f(10000, 0, 0);
-	GLfloat axisDiff2[4] = {0.0F, 1.0F, 0.0F, 1.00F};
+	glVertex3f(5000, 0, 0);
+	GLfloat axisDiff2[4] = {0.0F, 1.0F, 0.0F, 0.80F};
 	glNormal3f(0, 1, 0);
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, axisDiff2);
 	glVertex3f(0, 0, 0);
-	glVertex3f(0, 10000, 0);
-	GLfloat axisDiff3[4] = {0.0F, 0.0F, 1.0F, 1.00F};
+	glVertex3f(0, 5000, 0);
+	GLfloat axisDiff3[4] = {0.0F, 0.0F, 1.0F, 0.80F};
 	glNormal3f(0, 0, 1);
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, axisDiff3);
 	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, 10000);
+	glVertex3f(0, 0, 5000);
 	glEnd();
+	//GLfloat matrixDiff[4] = { 0.6F, 0.6F, 0.6F, 0.5F };
+	//glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matrixDiff);
+	//glLineWidth(1.0F);
+	//glBegin(GL_LINES);
+	//for (int i = -1000; i <= 1000; i+=10) {
+	//	glVertex3f(i, 0,-1000);
+	//	glVertex3f(i, 0,1000);
+	//	glVertex3d(-1000,0,i);
+	//	glVertex3d(1000,0,i);
+	//}
+	//glEnd();
 	glEndList();
+	glLineWidth(1.0F);
 }
 

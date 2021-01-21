@@ -16,7 +16,7 @@ CDlgFiberPathControlsCylinder::CDlgFiberPathControlsCylinder(CWnd* pParent /*=nu
 	m_dlg_cylinder_band_thickness = 0;
 	m_dlg_cylinder_cut_num = 0;
 	m_dlg_cylinder_slippage_coefficient = 0;
-	m_dlg_cylinder_winding_algorithm = "GEODESIC";
+	m_dlg_cylinder_winding_algorithm = "NON_GEODESIC";
 }
 
 CDlgFiberPathControlsCylinder::~CDlgFiberPathControlsCylinder()
@@ -40,8 +40,8 @@ BOOL CDlgFiberPathControlsCylinder::OnInitDialog() {
 	m_dlg_cylinder_band_width = 5.0f;
 	m_dlg_cylinder_cut_num = 7;
 	m_dlg_cylinder_band_thickness = 0.05f;
-	m_dlg_cylinder_slippage_coefficient = 0.3;
-	m_dlg_cylinder_winding_algorithm = "GEODESIC";
+	m_dlg_cylinder_slippage_coefficient = 0.30;
+	m_dlg_cylinder_winding_algorithm = "NON_GEODESIC";
 	m_combo.SetCurSel(0);
 	UpdateData(FALSE);
 	return TRUE;
