@@ -1648,7 +1648,7 @@ void CMfcogl1Doc::OnOpenFiberPathControlCylinderParametersDlg() {
 		float _theta;
 		float min_diff=999;
 		float real_left_length = sqrt(pow(cylinderModel.middle_radius, 2) * pow(cylinderModel.left_length, 2) / (pow(cylinderModel.middle_radius, 2) - pow(cylinderModel.left_radius, 2)));
-		for (float x = cylinderModel.left_length; x > 0; x -= 2) {
+		for (float x = cylinderModel.left_length; x > 0; x -= 5) {
 			float y = sqrt(1 - pow(cylinderModel.left_length-x,2) / (real_left_length * real_left_length)) * cylinderModel.middle_radius;
 			global_cylinder_coord = cylinderPathCoord(x, y, 0.0f);
 			min_diff = 999;
@@ -1664,11 +1664,12 @@ void CMfcogl1Doc::OnOpenFiberPathControlCylinderParametersDlg() {
 				}
 			}
 			cylinderModel.left_using_coef = left_using_coef;
-			
-			// x y left_using_coef left_cut_theta
-			struct data d = { x,y,left_using_coef,180.0 * left_cut_theta / PI,0,0 };
-			quoters.push_back(d);
-			OnComputeFiberPathCylinder();
+			if (min_diff<0.1) {
+				// x y left_using_coef left_cut_theta
+				struct data d = { x,y,left_using_coef,180.0 * left_cut_theta / PI,0,0 };
+				quoters.push_back(d);
+				OnComputeFiberPathCylinder();
+			}
 		}
 
 	/*	for (; cylinderModel.left_slippage_point > 0  && i==0; cylinderModel.left_slippage_point -= 0.01) {
