@@ -158,6 +158,7 @@ public: // properties
 	float global_left_min_r;
 	float global_left_cut_theta;
 	float global_right_min_r;
+	float global_left_edge;
 	cylinderPathCoord global_cylinder_coord;
 	std::deque <struct cylinderPathCoord>* CylinderPointList = NULL;//压力容器缠绕接触点序列
 //std::deque<std::deque<struct cylinderPathCoord>*>* CylinderPointList = NULL;
