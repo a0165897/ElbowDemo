@@ -7,6 +7,12 @@
 #include <deque>
 #include <vector>
 #include <string>
+#include <memory>
+
+//模板 类型无关方法/类 payeye track
+//OOP 多态 fiber path
+//smart ptr - new/delete
+
 /*全局的芯模相关数据*/
 struct data {
 	//data(float a,float b,float c, float d, float e=0, int no=0):a(a),b(b),c(c),d(d),e(e),no(no) {}
@@ -73,7 +79,6 @@ struct tubePathCoord {
 	float suspension;//缠绕到该点时，点到吐丝嘴的距离长度(悬丝长度)
 };
 
-
 struct cylinderModel {
 	float middle_length;
 	float middle_radius;
@@ -81,6 +86,7 @@ struct cylinderModel {
 	float left_radius;
 	float right_length;
 	float right_radius;
+	float cut_angle;
 	float slippage_coefficient;//μ 
 	float left_using_coef;//半测地线段落的实用μ
 	float right_using_coef;
@@ -159,7 +165,7 @@ public: // properties
 	float global_left_cut_theta;
 	float global_right_min_r;
 	cylinderPathCoord global_cylinder_coord;
-	std::deque <struct cylinderPathCoord>* CylinderPointList = NULL;//压力容器缠绕接触点序列
+	std::shared_ptr<std::deque <struct cylinderPathCoord>> CylinderPointList = NULL;//压力容器缠绕接触点序列
 //std::deque<std::deque<struct cylinderPathCoord>*>* CylinderPointList = NULL;
 
 	int m_isShowing;//1:tube(方直管) 2:elbow(圆弯管) 3:cylinder(开口压力容器)  4:cone(圆锥)
