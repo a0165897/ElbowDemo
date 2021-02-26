@@ -66,6 +66,12 @@
     <ClCompile Include="CreateNewConeDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CreateNewToroidDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgFiberPathControlsToroid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="mfcogl1.rc">
@@ -130,6 +136,12 @@
     <ClInclude Include="CreateNewConeDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CreateNewToroidDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgFiberPathControlsToroid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bitmap3.bmp">
@@ -165,5 +177,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ribbon1.mfcribbon-ms" />
+    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
 </Project>

@@ -139,9 +139,11 @@
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="CreateNewConeDlg.cpp" />
     <ClCompile Include="CreateNewCylinderDlg.cpp" />
+    <ClCompile Include="CreateNewToroidDlg.cpp" />
     <ClCompile Include="CreateNewTubeDlg.cpp" />
     <ClCompile Include="DlgFiberPathControls.cpp" />
     <ClCompile Include="DlgFiberPathControlsCylinder.cpp" />
+    <ClCompile Include="DlgFiberPathControlsToroid.cpp" />
     <ClCompile Include="DlgFiberPathControlsTube.cpp" />
     <ClCompile Include="HintDialog.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -166,10 +168,12 @@
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="CreateNewConeDlg.h" />
     <ClInclude Include="CreateNewCylinderDlg.h" />
+    <ClInclude Include="CreateNewToroidDlg.h" />
     <ClInclude Include="CreateNewTubeDlg.h" />
     <ClInclude Include="datatype.h" />
     <ClInclude Include="DlgFiberPathControls.h" />
     <ClInclude Include="DlgFiberPathControlsCylinder.h" />
+    <ClInclude Include="DlgFiberPathControlsToroid.h" />
     <ClInclude Include="DlgFiberPathControlsTube.h" />
     <ClInclude Include="HintDialog.h" />
     <ClInclude Include="MainFrm.h" />
@@ -199,6 +203,8 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="res\ribbon1.mfcribbon-ms" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

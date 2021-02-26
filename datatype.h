@@ -1,7 +1,6 @@
 #ifndef _DATA_TYPE_H
 #define _DATA_TYPE_H
 
-
 struct PathPointStructure //精度高,可用于计算过程
 {
 	float theta;      //张角绝对坐标

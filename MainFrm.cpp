@@ -90,8 +90,8 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	cs.style &= ~WS_THICKFRAME;
 	//使最大化按钮不可用
 	cs.style &= ~WS_MAXIMIZEBOX;
-	cs.cy=900;//!!!!
-	cs.cx=1200;
+	cs.cy=1080;//!!!!
+	cs.cx=1920;
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 

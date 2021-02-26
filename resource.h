@@ -26,6 +26,8 @@
 #define IDR_RIBBON1                     153
 #define IDD_FIBER_PATH_CONTROL_CYLINDER 154
 #define IDD_CREATE_NEW_CONE             155
+#define IDD_CREATE_NEW_TOROID           163
+#define IDD_FIBER_PATH_CONTROL_TOROID   165
 #define IDC_SPAN_ANGLE                  1000
 #define IDC_SWEEP_RADIUS                1001
 #define IDC_PIPE_RADIUS                 1002
@@ -93,6 +95,12 @@
 #define IDC_CONE_LRADIUS                1050
 #define IDC_CONE_RRADIUS                1051
 #define IDC_CONE_LENGTH                 1052
+#define IDC_TOROID_BIGR                 1053
+#define IDC_TOROID_SMALLR               1054
+#define IDC_TOROID_WINDING_ANGLE        1055
+#define IDC_TOROID_BAND_WIDTH           1056
+#define IDC_TOROID_WINDING_ANGLE2       1057
+#define IDC_TOROID_SLIPPAGE_COEFFICIENT 1057
 #define IDM_ROTATE                      32771
 #define IDM_ROTATE_WITH_X               32772
 #define IDM_ROTATE_WITH_Y               32773
@@ -144,15 +152,16 @@
 #define IDM_SAVE_TRACK                  32850
 #define ID_32851                        32851
 #define IDM_SHOW_AXIS                   32852
+#define IDM_CREATE_NEW_TOROID_MANDREL   32856
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        163
-#define _APS_NEXT_COMMAND_VALUE         32853
-#define _APS_NEXT_CONTROL_VALUE         1053
+#define _APS_NEXT_RESOURCE_VALUE        167
+#define _APS_NEXT_COMMAND_VALUE         32857
+#define _APS_NEXT_CONTROL_VALUE         1057
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

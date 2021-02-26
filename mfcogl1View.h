@@ -21,6 +21,7 @@ CONCLUTION
 #define AXIS_LIST							5 //×ø±êÖá
 #include "mfcogl1Doc.h" 
 #include "MainFrm.h"
+#include "DlgFiberPathControlsToroid.h"
 
 class CMfcogl1View : public CView
 {
@@ -78,6 +79,7 @@ public:
 	void CMfcogl1View::CreateTubeDisplayList();
 	void CMfcogl1View::CreateCylinderDisplayList();
 	void CMfcogl1View::CreateConeDisplayList();
+	void CMfcogl1View::CreateToroidDisplayList();
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -130,6 +132,7 @@ protected:
 	afx_msg void OnCreateNewTubeMandrel();
 	afx_msg void OnCreateNewCylinderMandrel();
 	afx_msg void OnCreateNewConeMandrel();
+	afx_msg void OnCreateNewToroidMandrel();
 	void CMfcogl1View::DrawAxis();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
@@ -187,6 +190,9 @@ public:
 	GLfloat m_view_cone_length;
 	GLfloat m_view_cone_lradius;
 	GLfloat m_view_cone_rradius;
+
+	GLfloat m_view_toroid_R;
+	GLfloat m_view_toroid_r;
 };
 
 #ifndef _DEBUG  // debug version in mfcogl1View.cpp

@@ -14,7 +14,7 @@
 #include "CreateNewTubeDlg.h"
 #include "CreateNewCylinderDlg.h"
 #include "CreateNewConeDlg.h"
-
+#include "CreateNewToroidDlg.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CMfcogl1View, CView)
 	ON_COMMAND(IDM_CREATE_NEW_TUBE_MANDREL, OnCreateNewTubeMandrel)
 	ON_COMMAND(IDM_CREATE_NEW_CYLINDER_MANDREL, OnCreateNewCylinderMandrel)
 	ON_COMMAND(IDM_CREATE_NEW_CONE_MANDREL, OnCreateNewConeMandrel)
+	ON_COMMAND(IDM_CREATE_NEW_TOROID_MANDREL, OnCreateNewToroidMandrel)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -135,14 +136,15 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	{
 		MessageBox("Make the rendering context current failed");
 	}
-
+	//glEnable(GL_LINE_SMOOTH);
 	glClearDepth(1.0F);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+
 	glDepthFunc(GL_LEQUAL); //without apparent effect
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glEnable(GL_AUTO_NORMAL);
 	glEnable(GL_NORMALIZE);
@@ -152,6 +154,7 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light0Pos);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0Pos);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light0Spec);
+
 	//设置透视矩阵
 	if (m_elbow_cnt == 0)
 	{
@@ -200,11 +203,15 @@ void CMfcogl1View::OnDraw(CDC* pDC)
 	{
 		if (m_cview_enable_tape_display)
 		{
+			glDepthMask(GL_FALSE);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			int path_id = FIBER_PATH_LIST;
 			while (glIsList(path_id)) {
 				glCallList(path_id);
 				path_id++;
 			}
+			glDepthMask(GL_TRUE);
 		}
 		if (m_cview_enable_track_display) 
 		{
@@ -480,11 +487,12 @@ void CMfcogl1View::InitFrustum()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	//平截头裁剪面
-	fNearPlane = 0.1F;
-	fFarPlane = 4000.0F;
+	fNearPlane = 1.0F;
+	fFarPlane = 2000;
 	fovy = 25.0F; //the bigger fovy is, the smaller the image is , fovy++, size--
 	//定义一下透视矩阵
 	gluPerspective(fovy, fAspect, fNearPlane, fFarPlane);
+	//glOrtho(-20, 20, -12, 12, 1, 1000);
 	glMatrixMode(GL_MODELVIEW);
 
 	m_viewing_sign = 1;
@@ -946,38 +954,39 @@ void CMfcogl1View::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	m_bCanDisplayPath = FALSE;
 	//CreateTubeDisplayList();
 	Invalidate(FALSE);
-	// TODO: Add your specialized code here and/or call the base class
 }
 
 /*added by LMK*/
 //生成方管
-void CMfcogl1View::OnCreateNewTubeMandrel()
-{
-	//初始化数值
-	m_cview_enable_tape_display = false;
-	m_cview_enable_track_display = false;
-	m_cview_display_winding_in_sequence = false;
-	m_cview_pnt_num_displayed_to = 0;
-	m_bCanDisplayPath = false;
-	m_bCanDisplayPayeye = false;
-	KillTimer(2);
-	glDeleteLists(FIBER_PATH_LIST, 16);
-
-
-	CMfcogl1Doc* pDoc = GetDocument();
-	pDoc->m_isShowing = 1;
+void CMfcogl1View::OnCreateNewTubeMandrel(){
 	CCreateNewTubeDlg new_tube_dlg;
 	int choice = new_tube_dlg.DoModal();
 	if (choice == IDOK)
 	{
+		//初始化数值
+		m_cview_enable_tape_display = false;
+		m_cview_enable_track_display = false;
+		m_cview_display_winding_in_sequence = false;
+		m_cview_pnt_num_displayed_to = 0;
+		m_bCanDisplayPath = false;
+		m_bCanDisplayPayeye = false;
+		KillTimer(2);
+
+		int path_id = FIBER_PATH_LIST;
+		while (glIsList(path_id)) { path_id++; }
+		glDeleteLists(FIBER_PATH_LIST, path_id - FIBER_PATH_LIST);
+
+		CMfcogl1Doc* pDoc = GetDocument();
+		pDoc->m_isShowing = 1;
+
 		pDoc->ResetWndDesign();
 		m_view_tube_a = new_tube_dlg.m_dlg_tube_a;
 		m_view_tube_b = new_tube_dlg.m_dlg_tube_b;
 		m_view_tube_length = new_tube_dlg.m_dlg_tube_length;
 		m_view_tube_r = new_tube_dlg.m_dlg_tube_r;
 		m_view_tube_redundence = new_tube_dlg.m_dlg_tube_redundance;
+		CreateTubeDisplayList();
 	}
-	CreateTubeDisplayList();
 	//to refresh screen
 	Invalidate(false);
 }
@@ -1069,31 +1078,35 @@ void CMfcogl1View::CreateTubeDisplayList()
 //生成开口压力容器
 void CMfcogl1View::OnCreateNewCylinderMandrel()
 {
-	//初始化数值
-	glDeleteLists(FIBER_PATH_LIST, 16);
-	m_cview_enable_track_display = false;
-	m_cview_enable_tape_display = false;
-	m_cview_display_winding_in_sequence = false;
-	m_bCanDisplayPath = false;
-	m_bCanDisplayPayeye = false;
-	m_cview_pnt_num_displayed_to = 0;
-	KillTimer(2);
-
-	CMfcogl1Doc* pDoc = GetDocument();
-	pDoc->m_isShowing = 3;
 	CCreateNewCylinderDlg new_cylinder_dlg;
 	int choice = new_cylinder_dlg.DoModal();
 	if (choice == IDOK)
 	{
+		//初始化数值
+		m_cview_enable_track_display = false;
+		m_cview_enable_tape_display = false;
+		m_cview_display_winding_in_sequence = false;
+		m_bCanDisplayPath = false;
+		m_bCanDisplayPayeye = false;
+		m_cview_pnt_num_displayed_to = 0;
+		KillTimer(2);
+		CMfcogl1Doc* pDoc = GetDocument();
+		pDoc->m_isShowing = 3;
+
+		int path_id = FIBER_PATH_LIST;
+		while (glIsList(path_id)) { path_id++; }
+		glDeleteLists(FIBER_PATH_LIST, path_id - FIBER_PATH_LIST);
+
 		pDoc->ResetWndDesign();
+
 		m_view_cylinder_middle_length = new_cylinder_dlg.m_dlg_cylinder_middle_length;
 		m_view_cylinder_middle_radius = new_cylinder_dlg.m_dlg_cylinder_middle_radius;
 		m_view_cylinder_left_length = new_cylinder_dlg.m_dlg_cylinder_left_length;
 		m_view_cylinder_left_radius = new_cylinder_dlg.m_dlg_cylinder_left_radius;
 		m_view_cylinder_right_length = new_cylinder_dlg.m_dlg_cylinder_right_length;
 		m_view_cylinder_right_radius = new_cylinder_dlg.m_dlg_cylinder_right_radius;
+		CreateCylinderDisplayList();
 	}
-	CreateCylinderDisplayList();
 	//to refresh screen
 	Invalidate(false);
 }
@@ -1101,7 +1114,7 @@ void CMfcogl1View::OnCreateNewCylinderMandrel()
 //计算开口压力容器的芯模 gl list输出
 void CMfcogl1View::CreateCylinderDisplayList()
 {
-	float bias = 0.0001;
+	float bias = 0.01;
 	float m_view_show_cylinder_middle_length = m_view_cylinder_middle_length - bias;
 	float m_view_show_cylinder_middle_radius = m_view_cylinder_middle_radius - bias;
 	float m_view_show_cylinder_left_length = m_view_cylinder_left_length - bias;
@@ -1121,7 +1134,7 @@ void CMfcogl1View::CreateCylinderDisplayList()
 	glMaterialf(GL_FRONT, GL_SHININESS, matShine);
 	//compute the mandrel.
 	glBegin(GL_TRIANGLE_STRIP);
-	float left = 0, step = 0.1, r_step = 5;
+	float left = 0, step = 0.05, r_step = 1;
 	for (; left < m_view_show_cylinder_left_length; left += step)
 	{
 		for (float r = 0; r <= 360; r += r_step)
@@ -1194,6 +1207,7 @@ void CMfcogl1View::CreateCylinderDisplayList()
 	glEndList();
 }
 
+
 /*Create By LMK*/
 /*圆锥 两端平截*/
 void CMfcogl1View::OnCreateNewConeMandrel()
@@ -1206,7 +1220,10 @@ void CMfcogl1View::OnCreateNewConeMandrel()
 	m_bCanDisplayPath = false;
 	m_bCanDisplayPayeye = false;
 	KillTimer(2);
-	glDeleteLists(FIBER_PATH_LIST, 16);
+
+	int path_id = FIBER_PATH_LIST;
+	while (glIsList(path_id)) { path_id++; }
+	glDeleteLists(FIBER_PATH_LIST, path_id - FIBER_PATH_LIST);
 
 	CMfcogl1Doc* pDoc = GetDocument();
 	pDoc->m_isShowing = 4;
@@ -1271,6 +1288,71 @@ void  CMfcogl1View::CreateConeDisplayList() {
 	glEnd();
 	glEndList();
 }
+
+void CMfcogl1View::OnCreateNewToroidMandrel() {
+	//初始化数值
+	m_cview_enable_tape_display = false;
+	m_cview_enable_track_display = false;
+	m_cview_display_winding_in_sequence = false;
+	m_cview_pnt_num_displayed_to = 0;
+	m_bCanDisplayPath = false;
+	m_bCanDisplayPayeye = false;
+	m_show_axis = true;
+	KillTimer(2);
+	int path_id = FIBER_PATH_LIST;
+	while (glIsList(path_id)) { path_id++; }
+	glDeleteLists(FIBER_PATH_LIST, path_id - FIBER_PATH_LIST);
+
+	CMfcogl1Doc* pDoc = GetDocument();
+	pDoc->m_isShowing = 5;
+	CCreateNewToroidDlg new_toroid_dlg;
+	int choice = new_toroid_dlg.DoModal();
+	if (choice == IDOK) {
+		pDoc->ResetWndDesign();
+		m_view_toroid_R = new_toroid_dlg.m_dlg_toroid_R;
+		m_view_toroid_r = new_toroid_dlg.m_dlg_toroid_r;
+	}
+	CreateToroidDisplayList();
+	//to refresh screen
+	Invalidate(false);
+}
+
+void CMfcogl1View::CreateToroidDisplayList() {
+	glNewList(MANDREL_DISPLAY_LIST, GL_COMPILE);
+	//light and color setting.
+	GLfloat matDiff[4] = { 0.4F, 0.6F, 0.6F, 1.00F };
+	GLfloat matSpec[4] = { 0.1F, 0.1F, 0.1F, 1.00F };
+	GLfloat matShine = 5.00F;
+	glLineWidth(1.0f);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, matDiff);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, matSpec);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, matShine);
+	//compute the mandrel.
+	glBegin(GL_TRIANGLE_STRIP);
+	float R = m_view_toroid_R, r = m_view_toroid_r - 0.1;
+	float d_angle = PI *  5/180.0;
+	auto toroid2xyz2gl = [&](float theta,float phi) {	
+		float x = (R + r * cos(phi)) * cos(theta);
+		float y = r * sin(phi);
+		float z = (R + r * cos(phi)) * sin(theta); 
+		float nx = cos(phi)*cos(theta);
+		float ny = sin(phi);
+		float nz = cos(phi)*sin(theta);
+		glNormal3f(nx, ny, nz);
+		glVertex3f(x, y, z);
+	};
+	//draw toroid
+	for (float theta = 0; theta < 2 * PI; theta += d_angle) {//大圆儿
+		for (float phi = 0; phi < 2 * PI; phi += 2*d_angle) {//小圆儿
+			toroid2xyz2gl(theta, phi);
+			toroid2xyz2gl(theta+d_angle, phi);
+		}
+	}
+
+	glEnd();
+	glEndList();
+}
+
 void CMfcogl1View::DrawAxis()
 {
 	if (glIsList(AXIS_LIST) == GL_TRUE) { glDeleteLists(AXIS_LIST, 1); }
