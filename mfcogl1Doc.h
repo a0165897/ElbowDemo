@@ -64,6 +64,9 @@ struct payeye {
 	double mandrel_speed;//芯模转速
 	double pm_distance;//吐丝嘴-芯模转轴距离
 	double pm_left_distance;//吐丝嘴-钉圈平面距离
+	double payeye_position;//小车在机器坐标系中的原点
+	double payeye_extend;//伸臂起点
+	int level;//缠绕层数
 };
 
 /*吐丝嘴的位置(和芯模旋转弧度)*/
@@ -135,6 +138,7 @@ struct toroidModel {
 struct toroidPathCoord {
 	toroidPathCoord() {}
 	toroidPathCoord(double theta,double phi):theta(theta),phi(phi) {}
+	double alpha;
 	double theta;
 	double phi;
 	vec3 position;

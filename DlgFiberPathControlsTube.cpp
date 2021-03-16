@@ -21,6 +21,10 @@ CDlgFiberPathControlsTube::CDlgFiberPathControlsTube(CWnd* pParent /*=nullptr*/)
 	m_dlg_tube_pm_distance = 0 ;//吐丝嘴-芯模转轴距离
 	m_dlg_tube_pm_left_distance = 0 ;//吐丝嘴-钉圈平面距离
 
+	m_dlg_tube_payeye_position = 0;//小车起点
+	m_dlg_tube_payeye_extend = 0;//伸臂起点
+	m_dlg_tube_round_winding = false;
+	m_dlg_tube_level = 0;
 }
 
 CDlgFiberPathControlsTube::~CDlgFiberPathControlsTube()
@@ -38,6 +42,11 @@ void CDlgFiberPathControlsTube::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_TUBE_MANDREL_SPEED, m_dlg_tube_mandrel_speed);
 	DDX_Text(pDX, IDC_TUBE_MANDREL_PAYEYE_DISTANCE, m_dlg_tube_pm_distance);
 	DDX_Text(pDX, IDC_TUBE_MANDREL_PAYEYE_LEFT_DISTANCE, m_dlg_tube_pm_left_distance);
+
+	DDX_Text(pDX, IDC_TUBE_MANDREL_PAYEYE_POSITION, m_dlg_tube_payeye_position);
+	DDX_Text(pDX, IDC_TUBE_MANDREL_PAYEYE_EXTEND, m_dlg_tube_payeye_extend);
+	DDX_Text(pDX, IDC_TUBE_LEVEL, m_dlg_tube_level);
+	DDX_Text(pDX, IDC_TUBE_ROUND_WINDING, m_dlg_tube_round_winding);
 }
 
 BOOL CDlgFiberPathControlsTube::OnInitDialog() {
@@ -51,9 +60,22 @@ BOOL CDlgFiberPathControlsTube::OnInitDialog() {
 	m_dlg_tube_pm_distance = 50.0f;//吐丝嘴-芯模转轴距离
 	m_dlg_tube_pm_left_distance = 0.0f;//吐丝嘴-钉圈平面距离
 
+	m_dlg_tube_payeye_position = 0;//小车在机器坐标系中的原点
+	m_dlg_tube_payeye_extend = 0;//伸臂起点
+	m_dlg_tube_level = 1;
+	m_dlg_tube_round_winding = false;
 	UpdateData(FALSE);
 	return TRUE;
 }
 
 
 // CDlgFiberPathControlsTube 消息处理程序
+BEGIN_MESSAGE_MAP(CDlgFiberPathControlsTube, CDialog)
+	ON_BN_CLICKED(IDC_TUBE_ROUND_WINDING, &CDlgFiberPathControlsTube::OnBnClickedTubeRoundWinding)
+END_MESSAGE_MAP()
+
+
+void CDlgFiberPathControlsTube::OnBnClickedTubeRoundWinding()
+{
+	// TODO: 在此添加控件通知处理程序代码
+}

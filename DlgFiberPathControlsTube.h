@@ -22,8 +22,15 @@ public:
 	float m_dlg_tube_pm_distance;//吐丝嘴-芯模转轴距离
 	float m_dlg_tube_pm_left_distance;//吐丝嘴-钉圈平面距离
 
-protected:
+	float m_dlg_tube_payeye_position;//小车在机器坐标系中的原点
+	float m_dlg_tube_payeye_extend;//伸臂起点
+
+	float m_dlg_tube_level;
+	// 使用环缠
+	int m_dlg_tube_round_winding;// 使用环缠:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
 	virtual BOOL OnInitDialog();
+	DECLARE_MESSAGE_MAP()
+	afx_msg void OnBnClickedTubeRoundWinding();
 };

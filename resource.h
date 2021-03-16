@@ -90,8 +90,11 @@
 #define IDC_CYLINDER_BAND_THICKNESS     1046
 #define IDC_TUBE_MANDREL_REDUNDANCY     1047
 #define IDC_CYLINDER_CUT_NUM            1047
+#define IDC_TUBE_MANDREL_PAYEYE_POSITION 1047
 #define IDC_CYLINDER_WINDING_ALGORITHM  1048
+#define IDC_TUBE_MANDREL_PAYEYE_EXTEND  1048
 #define IDC_CYLINDER_SLIPPAGE_COEFFICIENT 1049
+#define IDC_TUBE_LEVEL                  1049
 #define IDC_CONE_LRADIUS                1050
 #define IDC_CONE_RRADIUS                1051
 #define IDC_CONE_LENGTH                 1052
@@ -99,8 +102,9 @@
 #define IDC_TOROID_SMALLR               1054
 #define IDC_TOROID_WINDING_ANGLE        1055
 #define IDC_TOROID_BAND_WIDTH           1056
-#define IDC_TOROID_WINDING_ANGLE2       1057
 #define IDC_TOROID_SLIPPAGE_COEFFICIENT 1057
+#define IDC_TUBE_ROUND_WINDING          1059
+#define IDC_CHECK1                      1060
 #define IDM_ROTATE                      32771
 #define IDM_ROTATE_WITH_X               32772
 #define IDM_ROTATE_WITH_Y               32773
@@ -161,7 +165,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        167
 #define _APS_NEXT_COMMAND_VALUE         32857
-#define _APS_NEXT_CONTROL_VALUE         1057
+#define _APS_NEXT_CONTROL_VALUE         1061
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

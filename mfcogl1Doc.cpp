@@ -14,7 +14,9 @@
 #include "DlgFiberPathControlsToroid.h"
 #include <deque>
 #include <vector>
+#include <set>
 #include <string>
+#include <typeinfo>
 #include <memory>
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -163,7 +165,7 @@ void CMfcogl1Doc::OnOpenFiberPathControlTubeParametersDlg() {
 		payeye.pm_distance = fpTubeDlg.m_dlg_tube_pm_distance;
 		//payeye.pm_left_distance = fpTubeDlg.m_dlg_tube_pm_left_distance;
 		payeye.pm_left_distance = 5.0;
-
+		payeye.level = fpTubeDlg.m_dlg_tube_level;
 		auto pView = (CMfcogl1View*)myGetView();
 		tubeModel.a = pView->m_view_tube_a;
 		tubeModel.b = pView->m_view_tube_b;
@@ -187,6 +189,7 @@ void CMfcogl1Doc::OnOpenFiberPathControlTubeParametersDlg() {
 		jumpNum = (M + 1) / cutNum;
 
 		m_bCanComputing = true;
+		debug_show(fpTubeDlg.m_dlg_tube_round_winding);
 		CString STemp;
 		STemp.Format(_T("纱宽(修正) = %.2f mm\n缠绕角 = %.2f degree\n等分数=%d\n切点数=%d\n跳跃数=%d"),
 			real_width, fpTubeDlg.m_dlg_tube_winding_angle, M, cutNum, jumpNum);
@@ -197,8 +200,13 @@ void CMfcogl1Doc::OnOpenFiberPathControlTubeParametersDlg() {
 void CMfcogl1Doc::DestructTubeMemory() {
 	m_WindingCount[0] = 0;
 	if (TubePointList != NULL) {
-		for (auto i = TubePointList->begin(); i < TubePointList->end(); i++) {
-			delete (*i);
+		std::set<std::deque<struct tubePathCoord>*> tmp_ptr;
+		for (auto i : *TubePointList) {
+			tmp_ptr.insert(i);
+		}
+		for (auto i : tmp_ptr) {
+			delete i;
+			i = NULL;
 		}
 		delete TubePointList;
 		TubePointList = NULL;
@@ -207,6 +215,7 @@ void CMfcogl1Doc::DestructTubeMemory() {
 	if (TubeTrackList != NULL) {
 		for (auto i = TubeTrackList->begin(); i < TubeTrackList->end(); i++) {
 			delete (*i);
+			*i = NULL;
 		}
 		delete TubeTrackList;
 		TubeTrackList = NULL;
@@ -352,10 +361,12 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 	if (m_bCanComputing == true){
 		TubePointList = new std::deque<std::deque<struct tubePathCoord>*>;//TubePoint的双向链表指针的双向链表，内层表示一条纤维路径
 		auto TubeBothList = std::make_unique<std::deque<struct tubePathPosition>>();
-
+		//参数！
+		//中间段 非初始拟合部的结果
 		windingPathStep = 0.05;//计算的步长
-		windingRedundentStep = 800;
-		windingStepAngle = PI * 15 / 180;
+		//决定冗余段的精度，如果初始拟合部因为角度小直接来到冗余，则会出现差异缺陷。
+		windingRedundentStep = 400;
+		windingStepAngle = PI * 5 / 180;
 		TubeCurrentStart[0] = TubeCurrentStart[1] = -1;
 
 		//generate GL list
@@ -416,7 +427,12 @@ void CMfcogl1Doc::OnComputeFiberPathTube() {
 			OnRenderSinglePath(currentPathList);//计算本纤维路径的所有顶点位置并输入glList和TubePointList
 		}
 		glEndList();
-
+		int size_per_level = TubePointList->size();
+		for (int i = 1; i < payeye.level; i++) {
+			for (int j = 0; j < size_per_level; j++) {
+				TubePointList->push_back((*TubePointList)[j]);
+			}
+		}
 		//统计总的坐标数
 		m_WindingCount[0] = 0;
 		for (auto i = TubePointList->begin(); i < TubePointList->end(); i++) { m_WindingCount[0] += (*i)->size(); }
@@ -579,8 +595,9 @@ int CMfcogl1Doc::OnRenderLinePart(int state, std::deque<struct tubePathCoord>* s
 	double startPoint[3] = { currentPosition.x,currentPosition.y,currentPosition.z };
 	tubeModel.curveLength = 0;
 	int direction = currentPosition.direction;
-	int delta_alpha = 2;//delta_alpha:决定前端的长度的值，和ratio有一定的比例关系1:2左右比较好
-	int ratio=4;//ratio 小:头部平滑 ratio大:尾部平滑，结论:ratio应该随着缠绕角度变大 4~128
+	//参数！
+	int delta_alpha = 4;//delta_alpha:决定前端的长度的值，和ratio有一定的比例关系1:2左右比较好
+	int ratio=8;//ratio 小:头部平滑 ratio大:尾部平滑，结论:ratio应该随着缠绕角度变大 4~128
 	switch (state) {
 	case 1:
 		//glNormal3f(cos((360-2*segmentw)*3.14/180),sin((360-2*segmentw)*3.14/180),0.0f);		
@@ -819,7 +836,7 @@ int CMfcogl1Doc::OnRenderCurvePart(int state, std::deque<struct tubePathCoord>* 
 			nextPoint[0] = startPoint[0] + tubeModel.r * sin(tubeModel.curveLength);
 			nextPoint[1] = startPoint[1] + tubeModel.r * cos(tubeModel.curveLength);
 			nextPoint[2] = startPoint[2] + tubeModel.r * (tubeModel.curveLength - phase) / tan(tubeModel.angle) * direction;
-			
+			 
 			double shell_a = tubeModel.a;
 			double shell_b = tubeModel.b;
 			double shell_r = tubeModel.r + payeye.pm_left_distance;
@@ -1222,7 +1239,7 @@ void CMfcogl1Doc::OnSaveTubeTrackData() {
 			dataCleaner(in);
 			CFile File(FileDlg.GetPathName(), CFile::modeCreate | CFile::modeReadWrite);
 			char BufData[100];
-			sprintf(BufData, "芯模端头冗余,吐丝嘴-旋转轴距离,吐丝嘴-钉圈距离,数据行数\n%.1f, %.1f, %.1f, %d\n", tubeModel.redundance, payeye.pm_distance, payeye.pm_left_distance, in.size());
+			sprintf(BufData, "芯模端头冗余,吐丝嘴-旋转轴距离,吐丝嘴-钉圈距离,数据行数,纱条数\n%.1f, %.1f, %.1f, %d,%d\n", tubeModel.redundance, payeye.pm_distance, payeye.pm_left_distance, in.size(),M);
 			File.Write(BufData, strlen(BufData));
 			sprintf(BufData, "芯模宽度,芯模高度,芯模长度,缠绕角,纤维带宽\n%.1f, %.1f, %.1f, %.1f, %.1f\n",2.0f*(tubeModel.a+ tubeModel.r),2.0f*(tubeModel.b+ tubeModel.r),tubeModel.length,tubeModel.angle*180.0f/PI,tubeModel.width);
 			File.Write(BufData, strlen(BufData));
@@ -1238,9 +1255,9 @@ void CMfcogl1Doc::OnSaveTubeTrackData() {
 					tmp_angle += 360.0;
 				}
 				//diff
-				sprintf(BufData, "%.5f, %.5f, %.5f, %.5f, %.5f, %d\n", -tmp_angle, i->b - p->b, i->c - p->c, i->d - p->d, i->e - p->e, i->no);
+				//sprintf(BufData, "%.5f, %.5f, %.5f, %.5f, %.5f, %d\n", -tmp_angle, i->b - p->b, i->c - p->c, i->d - p->d, i->e - p->e, i->no);
 				//all
-				//sprintf(BufData, "%.5f, %.5f, %.5f, %.5f, %.5f, %d\n", i->a, i->b , i->c , i->d , i->e ,i->no);
+				sprintf(BufData, "%.5f, %.5f, %.5f, %.5f, %.5f, %d\n", i->a, i->b , i->c , i->d , i->e ,i->no);
 				File.Write(BufData, strlen(BufData));
 			}
 			File.Flush();
@@ -2020,15 +2037,16 @@ void CMfcogl1Doc::OnOpenFiberPathControlToroidParametersDlg() {
 		K = (1 - ((2 * PI / period) - (int)(2 * PI / period))) * M;
 
 		double pingpong = d_alpha, direction = 1.0;
-		while (!(abs(K - round(K)) < margin && gcd(round(K), M) == 1)&&M>1) {
-			alpha = origin_alpha + direction * pingpong;
-			period = 2 * PI * r / (tan(alpha) * sqrt(R * R - r * r));
-			intersect = toroidModel.band_width / sin(alpha);
-			M = ceil(period * (R + r) / intersect);
-			K = (1 - ((2 * PI / period) - (int)(2 * PI / period))) * M;
-			direction = -direction;
-			if (direction > 0) pingpong += d_alpha;
-		}
+		//以下是等缠绕角的代数模式计算
+		//while (!(abs(K - round(K)) < margin && gcd(round(K), M) == 1)&&M>1) {
+		//	alpha = origin_alpha + direction * pingpong;
+		//	period = 2 * PI * r / (tan(alpha) * sqrt(R * R - r * r));
+		//	intersect = toroidModel.band_width / sin(alpha);
+		//	M = ceil(period * (R + r) / intersect);
+		//	K = (1 - ((2 * PI / period) - (int)(2 * PI / period))) * M;
+		//	direction = -direction;
+		//	if (direction > 0) pingpong += d_alpha;
+		//}
 		toroidModel.M = M;
 		toroidModel.angle = alpha;
 
@@ -2036,8 +2054,8 @@ void CMfcogl1Doc::OnOpenFiberPathControlToroidParametersDlg() {
 		double m = toroidModel.lambda;
 		double p21 = (t * t) / (m * m);
 		double p22 = (4 + 4 / (m * m)) * pow(t, 2) + pow(t, 4) / pow(m, 4);
-		double p1 = asin(sqrt(t));
-		double p2 = acos(sqrt((2 + p21 - sqrt(p22)) / 2));
+		double p1 = asin(sqrt(t));//不架桥
+		double p2 = acos(sqrt((2 + p21 - sqrt(p22)) / 2));//不打滑
 		double p = max(p1, p2);
 
 		if (abs(alpha) < p) {
@@ -2053,6 +2071,8 @@ void CMfcogl1Doc::OnOpenFiberPathControlToroidParametersDlg() {
 		}
 	}
 }
+
+#define TEST
 
 void CMfcogl1Doc::OnComputeFiberPathToroid() {
 	if (m_bCanComputing == true) {
@@ -2074,22 +2094,41 @@ void CMfcogl1Doc::OnComputeFiberPathToroid() {
 		//toroidModel.angle = -toroidModel.angle;
 		double R = toroidModel.R, r = toroidModel.r, alpha = toroidModel.angle;
 
-		double delta = PI * 1 / 180.0;
+		double delta = PI * 0.1 / 180.0;
 		double period = 2 * PI * r / (tan(alpha) * sqrt(R * R - r * r));
 		double t1 = 0, p1 = 0, t2 = 0, p2 = 0;
-	//	toroidModel.M = 5;
 		glLineWidth(2.0f);
-		//glBegin(GL_LINE_STRIP);
-		//while (-i * 2.0 * PI < currentPoint.theta && currentPoint.theta < i * 2.0 * PI) {
-		//	thetaphi2gl(0, 0, currentPoint.theta, currentPoint.phi, GL_LINE_STRIP);
-		//	currentPoint.phi += delta;
-		//	int n = ceil((currentPoint.phi - PI) / (2 * PI));
-		//	currentPoint.theta = (2 * cota * r * atan((tan(currentPoint.phi / 2) * (R - r)) / sqrt(R * R - r * r))) / sqrt(R * R - r * r) + n * period;
-		//}
-		//thetaphi2gl(0, 0, currentPoint.theta, currentPoint.phi, GL_LINE_STRIP);
-		//glEnd();
-		for (int i = 1; i <= toroidModel.M; i++) {
 
+#ifdef TEST
+		toroidModel.M = 1;
+#endif // TEST
+		currentPoint.alpha = toroidModel.angle;
+		for (int i = 1; i <= toroidModel.M; i++) {
+#ifdef TEST
+			glBegin(GL_LINE_STRIP);
+			while (-i * 2.0 * PI < currentPoint.theta && currentPoint.theta < i * 2.0 * PI) {
+				thetaphi2gl(0, 0, currentPoint.theta, currentPoint.phi, GL_LINE_STRIP);
+				//int n = ceil((currentPoint.phi - PI) / (2 * PI));
+				//currentPoint.theta = (2 * r * atan((tan(currentPoint.phi / 2) * (R - r)) / sqrt(R * R - r * r))) / (tan(alpha) * sqrt(R * R - r * r)) + n * period;
+				//currentPoint.phi += delta;
+				double alpha = currentPoint.alpha;
+				double phi = currentPoint.phi;
+				double lambda = sin(phi) > 0 ? -toroidModel.lambda : toroidModel.lambda;
+				double denominator = R + r * cos(phi);
+				double ap1 = r * sin(phi);
+				double ap2 = denominator * tan(alpha);
+				//ref: zulei 基于非测地线纤维缠绕压力容器线型设计与优化
+				double dalphadphi = -lambda * ((r * cos(phi) * cos(alpha)) / (denominator * tan(alpha)) + sin(alpha)) - ap1 / ap2;
+				double dthetadphi = r / ap2;
+				currentPoint.phi += delta;
+				currentPoint.theta += dthetadphi * delta;
+				currentPoint.alpha += dalphadphi * delta;
+			}
+			thetaphi2gl(0, 0, currentPoint.theta, currentPoint.phi, GL_LINE_STRIP);
+			glEnd();
+#endif // TEST
+
+#ifndef TEST
 			//part1
 			currentPoint.reset(t1, p1);
 			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, matDiff);
@@ -2166,6 +2205,7 @@ void CMfcogl1Doc::OnComputeFiberPathToroid() {
 			toroidModel.angle = -toroidModel.angle;
 			alpha = toroidModel.angle;
 			period = 2 * PI * r / (tan(alpha) * sqrt(R * R - r * r));
+#endif // !TEST
 		}
 
 		glEndList();
