@@ -1,14 +1,24 @@
 // mfcogl1View.h : interface of the CMfcogl1View class
-
+/*
+复合材料结构 复合材料 JOURNEL OF C P T
+INTRO
+mandrel pre-articulation 座标架 母线MALIDIAN 半椭球+柱面
+fiber path design 推导
+winding pattern design 切点数 缠绕角...  “2020 缠绕模式 影响”架桥
+cad 系统
+试验系统
+CONCLUTION
+*/
 #pragma once
 
 #define PE  pDoc->pPath
 #define PT pDoc->ptrack
 #define MANDREL_DISPLAY_LIST	1//芯模
-#define FIBER_PATH_LIST					2//纤维束
+#define FIBER_PATH_LIST					20//纤维束
+//每次初始化都会delete 20~36
 #define FIBER_TRACK_LIST				3//机器路径
 #define COMPOSITE_LIST					4//不知道是啥
-#define GLOBAL_LIST							5 //坐标轴
+#define AXIS_LIST							5 //坐标轴
 #include "mfcogl1Doc.h" 
 #include "MainFrm.h"
 
@@ -51,9 +61,13 @@ public:
 
 // Implementation
 public:
+	float currentPoint1[3],currentPoint2[3];
+	float currentNormal1[3],currentNormal2[3];
 	bool m_cview_disable_mandrel_display;
 	bool m_cview_enable_tape_display;
-
+	bool m_cview_enable_track_display;
+	bool m_show_axis;
+	void DisplayLinkPart();			
 	int DisplayPayeyeProcess();
 	int DisplaytheWindingProcess();
 	void InitFrustum();
@@ -63,6 +77,7 @@ public:
 	/*added by LMK*/
 	void CMfcogl1View::CreateTubeDisplayList();
 	void CMfcogl1View::CreateCylinderDisplayList();
+	void CMfcogl1View::CreateConeDisplayList();
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -110,15 +125,15 @@ protected:
 	afx_msg void OnAdjustDisplayElapse();
 	afx_msg void OnViewDisplayMandrel();
 	afx_msg void OnUpdateViewDisplayMandrel(CCmdUI* pCmdUI);
-
+	afx_msg void OnChangeAxis();
 	/*added by LMK*/
 	afx_msg void OnCreateNewTubeMandrel();
 	afx_msg void OnCreateNewCylinderMandrel();
+	afx_msg void OnCreateNewConeMandrel();
 	void CMfcogl1View::DrawAxis();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
-	
 	unsigned short step_number,scircuit;
 	unsigned long m_payeye_to;
 	bool m_bCanDisplayPayeye,m_bCanDisplayPath;
@@ -126,7 +141,7 @@ private:
 	CMfcogl1Doc *pDoc;
 
 
-	bool m_cview_display_winding_in_sequence,m_bHaveCylinder;	
+	bool m_cview_display_winding_in_sequence;	
 	float m_view_rotation_speed;
 	CPoint m_mouse_down_point;
 	BOOL m_elbow_updated;
@@ -153,11 +168,14 @@ private:
 	GLint   m_elbow_cnt;
 public:
 	/*added by LMK*/
+	float windingAngle;
+	float cur_spindle;
 	//dialog(IDC_TUBE_WIDTH/2 - RADIUS)->Class CreateNewTubeDlg(m_dlg_tube_a)->view(m_view_tube_a)
 	GLfloat m_view_tube_a;
 	GLfloat m_view_tube_b;
-	GLfloat m_view_tube_length =0;
+	GLfloat m_view_tube_length;
 	GLfloat m_view_tube_r;
+	GLfloat m_view_tube_redundence;
 
 	GLfloat m_view_cylinder_middle_length;
 	GLfloat m_view_cylinder_middle_radius;
@@ -165,6 +183,10 @@ public:
 	GLfloat m_view_cylinder_left_radius;
 	GLfloat m_view_cylinder_right_length;
 	GLfloat m_view_cylinder_right_radius;
+
+	GLfloat m_view_cone_length;
+	GLfloat m_view_cone_lradius;
+	GLfloat m_view_cone_rradius;
 };
 
 #ifndef _DEBUG  // debug version in mfcogl1View.cpp

@@ -60,6 +60,12 @@
     <ClCompile Include="CreateNewCylinderDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DlgFiberPathControlsCylinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateNewConeDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="mfcogl1.rc">
@@ -118,6 +124,12 @@
     <ClInclude Include="CreateNewCylinderDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DlgFiberPathControlsCylinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CreateNewConeDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bitmap3.bmp">
@@ -150,5 +162,8 @@
       <Filter>Resource Files</Filter>
     </CustomBuild>
     <CustomBuild Include="mfcogl1.reg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ribbon1.mfcribbon-ms" />
   </ItemGroup>
 </Project>

@@ -52,4 +52,17 @@ BOOL CCreateNewCylinderDlg::OnInitDialog() {
 	m_dlg_cylinder_right_radius = 6;
 	UpdateData(FALSE);
 	return TRUE;
+}BEGIN_MESSAGE_MAP(CCreateNewCylinderDlg, CDialog)
+ON_EN_CHANGE(IDC_CYLINDER_LEFT_RADIUS, &CCreateNewCylinderDlg::OnEnChangeCylinderLeftRadius)
+END_MESSAGE_MAP()
+
+
+void CCreateNewCylinderDlg::OnEnChangeCylinderLeftRadius()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialog::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
 }

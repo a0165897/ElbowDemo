@@ -22,4 +22,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	virtual BOOL OnInitDialog();
+public:
+	DECLARE_MESSAGE_MAP()
+	afx_msg void OnEnChangeCylinderLeftRadius();
 };
